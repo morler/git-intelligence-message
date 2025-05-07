@@ -10,22 +10,30 @@ struct Cli {
     /// 消息内容
     #[arg(short, long)]
     message: Option<String>,
-    
+
     /// 自动添加
     #[arg(short, long, default_value_t = false)]
     auto_add: bool,
-    
+
     #[command(subcommand)]
     command: Option<Commands>,
 }
 
 #[derive(Subcommand)]
 enum Commands {
-    /// 示例子命令
-    Example {
-        /// 示例参数
+    /// set ai model parameters
+    Ai {
+        /// ai model
         #[arg(short, long)]
-        name: String,
+        model: String,
+
+        /// ai api key
+        #[arg(short, long)]
+        apikey: String,
+
+        /// ai api url
+        #[arg(short, long)]
+        url: String,
     },
 }
 
@@ -68,6 +76,11 @@ fn ensure_config_file_exists() -> std::io::Result<PathBuf> {
 fn run_cli(cli: &Cli, config_file: &PathBuf) {
     let config_content = fs::read_to_string(config_file).expect("Failed to read config file");
 
+    if let Some(Commands::Ai { model, apikey, url }) = &cli.command {
+        println!("Hello, {} {} {}", model, apikey, url);
+        return;
+    }
+
     if cli.auto_add {
         println!("Auto add mode enabled");
     }
@@ -77,14 +90,7 @@ fn run_cli(cli: &Cli, config_file: &PathBuf) {
         return;
     }
 
-    match &cli.command {
-        Some(Commands::Example { name }) => {
-            println!("Hello, {}!", name);
-        }
-        None => {
-            println!("No subcommand was used. Config content: {}", config_content);
-        }
-    }
+    println!("No subcommand was used. Config content: {}", config_content);
 }
 
 fn main() {
