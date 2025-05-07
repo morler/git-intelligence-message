@@ -5,6 +5,8 @@ edition = "2021"
 
 [dependencies]
 clap = { version = "4.4", features = ["derive"]}
+dirs = "5.0"
+toml = "0.8"
 
 [[bin]]
 name = "gim"
