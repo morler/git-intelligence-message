@@ -38,7 +38,6 @@ pub fn get_config_into_toml() -> std::io::Result<toml::Value> {
         ai_table.insert("model".to_string(), toml::Value::String(String::new()));
         ai_table.insert("apikey".to_string(), toml::Value::String(String::new()));
         ai_table.insert("url".to_string(), toml::Value::String(String::new()));
-        ai_table.insert("prompt".to_string(), toml::Value::String(String::new()));
         ai_table.insert("language".to_string(), toml::Value::String("English".to_string()));
 
         let mut default_content = toml::map::Map::new();
@@ -82,7 +81,6 @@ mod tests {
         assert!(ai_table.contains_key("model"), "Missing model field");
         assert!(ai_table.contains_key("apikey"), "Missing apikey field");
         assert!(ai_table.contains_key("url"), "Missing url field");
-        assert!(ai_table.contains_key("prompt"), "Missing prompt field");
         assert!(ai_table.contains_key("language"), "Missing language field");
         print!("{:?}", parsed)
     }

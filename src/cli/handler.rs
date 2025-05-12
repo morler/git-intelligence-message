@@ -1,3 +1,4 @@
+use std::io::Result;
 use toml;
 
 pub fn update_ai_config(
@@ -5,7 +6,6 @@ pub fn update_ai_config(
     model: &Option<String>,
     apikey: &Option<String>,
     url: &Option<String>,
-    prompt: &Option<String>,
     language: &Option<String>,
 ) {
     let ai_table = config
@@ -29,12 +29,6 @@ pub fn update_ai_config(
     if let Some(url_value) = url {
         ai_table.insert("url".to_string(), toml::Value::String(url_value.clone()));
     }
-    if let Some(prompt_value) = prompt {
-        ai_table.insert(
-            "prompt".to_string(),
-            toml::Value::String(prompt_value.clone()),
-        );
-    }
     if let Some(language_value) = language {
         ai_table.insert(
             "language".to_string(),
@@ -43,4 +37,29 @@ pub fn update_ai_config(
     }
 
     crate::config::save_config(config);
+}
+
+pub fn get_ai_config() -> Result<toml::Value> {
+    // if let Ok(ai) = crate::config::get_config_into_toml() {
+    //     ai.get("ai").unwrap().clone()
+    // }
+    let toml = crate::config::get_config_into_toml();
+    if toml.is_err() {
+        toml
+    } else if let Ok(toml) = toml {
+        let ai = toml.get("ai");
+        if let Some(ai) = ai {
+            Ok(ai.clone())
+        } else {
+            Err(std::io::Error::new(
+                std::io::ErrorKind::InvalidData,
+                "Failed to get ai section",
+            ))
+        }
+    } else {
+        Err(std::io::Error::new(
+            std::io::ErrorKind::InvalidData,
+            "Failed to get ai config",
+        ))
+    }
 }

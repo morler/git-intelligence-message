@@ -7,7 +7,11 @@ edition = "2021"
 clap = { version = "4.4", features = ["derive"]}
 dirs = "5.0"
 toml = "0.8"
-git2 = "0.18"
+serde = { version = "1.0", features = ["derive"]}
+serde_json = "1.0"
+reqwest = { version = "0.11", features = ["json"]}
+tokio = { version = "1", features = ["full"] }
+validator = { version = "0.16", features = ["derive"]}
 
 [[bin]]
 name = "gim"
