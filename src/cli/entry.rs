@@ -44,6 +44,13 @@ pub async fn run_cli(cli: &GimCli, mut config: toml::Value) {
         ])
         .output()
         .expect("Failed to get git status");
+    print_verbose(
+        cli,
+        &format!(
+            "Run 'git status -s --untracked-files={}'",
+            if cli.auto_add { "all" } else { "no" }
+        ),
+    );
     let status_str = String::from_utf8_lossy(&status_output.stdout);
     let changes: Vec<&str> = status_str.lines().collect();
     let mut diff_content = String::new();
@@ -71,6 +78,7 @@ pub async fn run_cli(cli: &GimCli, mut config: toml::Value) {
                 eprintln!("Error: Failed to add changes to git");
                 return;
             }
+            print_verbose(cli, "Run 'git add .'");
         }
 
         diff_content.push_str("When I use `git diff`, I got the following output: \n");
@@ -80,20 +88,39 @@ pub async fn run_cli(cli: &GimCli, mut config: toml::Value) {
             .args(["diff", "--cached"])
             .output()
             .expect("Failed to get git diff --cached");
+        print_verbose(cli, "Run 'git diff --cached'");
         diff_content.push_str(&String::from_utf8_lossy(&diff_output.stdout));
         diff_content.push_str("\n");
-    } else if cli.update {
+    }
+    if cli.update {
+        diff_content.push_str(
+            "As I want to amend commit message, I use `git show` and got the following output: \n",
+        );
+
+        // Get last commit changes
+        let show_output = Command::new("git")
+            .args(["show", "--pretty=format:", "HEAD"])
+            .output()
+            .expect("Failed to get git show");
+        print_verbose(cli, "Run 'git show --pretty=format: HEAD'");
+        diff_content.push_str(&String::from_utf8_lossy(&show_output.stdout));
+        diff_content.push_str("\n");
+        println!("As '- u' option is enabled, I will amend the last commit message");
     }
     let system = r#"
     You are an expert developer specialist in creating git commits. 
-    Provide a super concise one sentence overall changes summary for each file, following strictly the next rules:
+    Provide a super concise one sentence overall changes summary for EACH file, splitting each summary with a new line.
+    If user wants to amend a commit, all changes of every file must be included in the commit.
+    Please follow strictly all these rules:
     - Do not use any code snippets, imports, file routes or bullets points.
-    - Do not mention the route of file that has been change.
     - Write clear, concise, and descriptive messages that explain the MAIN GOAL made of the changes.
     - Use the present tense and active voice in the message, for example, "Fix bug" instead of "Fixed bug".
     - Use the imperative mood, which gives the message a sense of command, e.g. "Add feature" instead of "Added feature".
     - Avoid using general terms like "update" or "change", be specific about what was updated or changed.
-    - Avoid using terms like "The main goal of", just output directly the summary in plain text"#;
+    - Avoid using terms like "The main goal of", just output directly the summary in plain text.
+    - The summary format follows 'FILE: CHANGES\n'
+    IMPORTANT: the output contains only lines of summaries without any other chat content,
+    availing user copying the output as commit message no need any further modification"#;
 
     let ai_config = super::handler::get_ai_config();
     if ai_config.is_err() {
@@ -155,10 +182,12 @@ pub async fn run_cli(cli: &GimCli, mut config: toml::Value) {
         }
     };
 
-    diff_content.push_str(&format!(
-        "\n The answer should be in {} language. If you cannot recognize this language, use English instead.",
-        language
-    ));
+    if language != "English" {
+        diff_content.push_str(&format!(
+            "\n The answer should be in {} language. If you cannot recognize this language, use English instead.",
+            language
+        ));
+    }
     let res = chat(url, model_name, api_key, Some(system), &diff_content).await;
     if let Err(e) = res {
         ai_generating_error(&format!("Error: {}", e), cli.auto_add && changes.len() > 0);
@@ -202,9 +231,14 @@ pub async fn run_cli(cli: &GimCli, mut config: toml::Value) {
         }
     }
     let commit_subject = commit_subject.unwrap();
-    // println!("Commit body: {}", diff_content);
-    println!("Commit subject: {}", commit_subject);
-    println!("Commit message: {}", answer);
+    if cli.verbose {
+        println!("AI chat content ('-v' enabled): {}", diff_content);
+    }
+    println!(
+        ">>>>>>>>>>>>>>>>>>>>>>>>>\nCommit subject: {}",
+        commit_subject
+    );
+    println!("Commit message: {}\n<<<<<<<<<<<<<<<<<<<<<<<<<", answer);
 
     // Prepare commit message
     let mut commit_args = vec!["commit"];
@@ -220,6 +254,7 @@ pub async fn run_cli(cli: &GimCli, mut config: toml::Value) {
         .expect("Failed to execute git commit");
 
     if commit_output.status.success() {
+        print_verbose(cli, "Run 'git commit -m <subject> -m <message>'");
         println!("Successfully committed changes!");
     } else {
         eprintln!(
@@ -233,5 +268,11 @@ fn ai_generating_error(abort: &str, auto_add: bool) {
     eprintln!("{}", abort);
     if auto_add {
         println!("Noted: your changes are added to git");
+    }
+}
+
+fn print_verbose(cli: &GimCli, log: &str) {
+    if cli.verbose {
+        println!("{}", log);
     }
 }

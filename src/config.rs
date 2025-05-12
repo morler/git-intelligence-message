@@ -17,7 +17,11 @@ fn get_config_file() -> std::io::Result<PathBuf> {
     Ok(config_file)
 }
 
-pub fn get_config_into_toml() -> std::io::Result<toml::Value> {
+pub fn get_config_into() -> std::io::Result<toml::Value> {
+    get_config_into_toml(true)
+}
+
+pub fn get_config_into_toml(log_dir: bool) -> std::io::Result<toml::Value> {
     let config_file = get_config_file().expect("Failed to get config file");
     if !config_file.exists() {
         if let Some(parent) = config_file.parent() {
@@ -48,7 +52,9 @@ pub fn get_config_into_toml() -> std::io::Result<toml::Value> {
         let mut file = fs::File::create(&config_file)?;
         file.write_all(default_content.as_bytes())?;
     }
-    println!("Config file is {}", config_file.display());
+    if log_dir {
+        println!("Config file is {}", config_file.display());
+    }
     let content = fs::read_to_string(&config_file)?;
     let config: toml::Value = toml::from_str(&content)
         .map_err(|e| std::io::Error::new(std::io::ErrorKind::InvalidData, e))?;
@@ -67,11 +73,11 @@ pub fn save_config(config: &toml::Value) {
 
 #[cfg(test)]
 mod tests {
-    use crate::config::get_config_into_toml;
+    use crate::config::get_config_into;
 
     #[test]
     fn test_ensure_config_file_exists_creates_file() {
-        let parsed = get_config_into_toml().unwrap();
+        let parsed = get_config_into().unwrap();
         let settings = parsed.get("settings");
         let ai = parsed.get("ai");
         assert!(settings.is_some(), "Missing settings section");

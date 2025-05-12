@@ -17,6 +17,10 @@ pub struct GimCli {
     /// Ammend the last commit
     #[arg(short, long, default_value_t = false)]
     pub update: bool,
+
+    /// Show verbose output
+    #[arg(short, long, default_value_t = false)]
+    pub verbose: bool,
 }
 
 #[derive(Subcommand)]

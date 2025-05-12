@@ -50,6 +50,7 @@ gim ai --language "your-language"
 - `-k, --apikey <STRING>`: Configure the API key for AI service
 - `-u, --url <STRING>`: Set the API endpoint for AI service
 - `-l, --language <STRING>`: Define the language for generated commit messages
+- `-v, --verbose`: Show verbose output including AI chat content
 
 ## Workflow
 

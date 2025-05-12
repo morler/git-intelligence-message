@@ -40,10 +40,7 @@ pub fn update_ai_config(
 }
 
 pub fn get_ai_config() -> Result<toml::Value> {
-    // if let Ok(ai) = crate::config::get_config_into_toml() {
-    //     ai.get("ai").unwrap().clone()
-    // }
-    let toml = crate::config::get_config_into_toml();
+    let toml = crate::config::get_config_into_toml(false);
     if toml.is_err() {
         toml
     } else if let Ok(toml) = toml {
