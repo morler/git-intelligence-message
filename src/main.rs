@@ -3,6 +3,7 @@ use config::get_config_into;
 
 mod cli;
 mod config;
+mod constants;
 
 #[tokio::main]
 async fn main() {
