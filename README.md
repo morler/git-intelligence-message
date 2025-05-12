@@ -20,11 +20,24 @@ gim --auto-add
 gim --update
 ```
 
+### Recommended Usage
+
+```bash
+# Basic usage - generate commit message for staged changes
+gim
+
+# Auto-stage changes and generate commit message
+gim -a
+
+# Amend the most recent commit
+gim -apv
+```
+
 ### Command Options
 
 - `-t, --title <STRING>`: Specify the commit message title
 - `-a, --auto-add`: Automatically stage all modifications
-- `-u, --update`: Amend the most recent commit
+- `-p, --update`: Amend the most recent commit
 
 ### AI Configuration
 
@@ -43,6 +56,8 @@ gim ai --url "your-api-url"
 # Set output language
 gim ai --language "your-language"
 ```
+
+> 注意：`--url` 参数仅支持 OpenAI 兼容的 API 地址（如 OpenAI 官方或兼容 OpenAI 协议的第三方服务端点），不支持非 OpenAI 格式的 API。
 
 #### AI Configuration Options
 

@@ -1,3 +1,5 @@
+use crate::constants::{DIFF_PROMPT, SUBJECT_PROMPT};
+
 use super::{
     command::{GimCli, GimCommands},
     http::chat,
@@ -81,7 +83,6 @@ pub async fn run_cli(cli: &GimCli, mut config: toml::Value) {
             print_verbose(cli, "Run 'git add .'");
         }
 
-        diff_content.push_str("When I use `git diff`, I got the following output: \n");
 
         // Get staged changes
         let diff_output = Command::new("git")
@@ -89,8 +90,11 @@ pub async fn run_cli(cli: &GimCli, mut config: toml::Value) {
             .output()
             .expect("Failed to get git diff --cached");
         print_verbose(cli, "Run 'git diff --cached'");
-        diff_content.push_str(&String::from_utf8_lossy(&diff_output.stdout));
-        diff_content.push_str("\n");
+        if !diff_output.stdout.is_empty() {
+            diff_content.push_str("When I use `git diff`, I got the following output: \n");
+            diff_content.push_str(&String::from_utf8_lossy(&diff_output.stdout));
+            diff_content.push_str("\n");
+        }
     }
     if cli.update {
         diff_content.push_str(
@@ -105,22 +109,14 @@ pub async fn run_cli(cli: &GimCli, mut config: toml::Value) {
         print_verbose(cli, "Run 'git show --pretty=format: HEAD'");
         diff_content.push_str(&String::from_utf8_lossy(&show_output.stdout));
         diff_content.push_str("\n");
-        println!("As '- u' option is enabled, I will amend the last commit message");
+        println!("As '-p' option is enabled, I will amend the last commit message");
     }
-    let system = r#"
-    You are an expert developer specialist in creating git commits. 
-    Provide a super concise one sentence overall changes summary for EACH file, splitting each summary with a new line.
-    If user wants to amend a commit, all changes of every file must be included in the commit.
-    Please follow strictly all these rules:
-    - Do not use any code snippets, imports, file routes or bullets points.
-    - Write clear, concise, and descriptive messages that explain the MAIN GOAL made of the changes.
-    - Use the present tense and active voice in the message, for example, "Fix bug" instead of "Fixed bug".
-    - Use the imperative mood, which gives the message a sense of command, e.g. "Add feature" instead of "Added feature".
-    - Avoid using general terms like "update" or "change", be specific about what was updated or changed.
-    - Avoid using terms like "The main goal of", just output directly the summary in plain text.
-    - The summary format follows 'FILE: CHANGES\n'
-    IMPORTANT: the output contains only lines of summaries without any other chat content,
-    availing user copying the output as commit message no need any further modification"#;
+    if diff_content.is_empty() {
+        println!("No changes found. To update last commit message, please use '-u' option");
+        return;
+    }
+
+    let system = DIFF_PROMPT;
 
     let ai_config = super::handler::get_ai_config();
     if ai_config.is_err() {
@@ -188,7 +184,7 @@ pub async fn run_cli(cli: &GimCli, mut config: toml::Value) {
             language
         ));
     }
-    let res = chat(url, model_name, api_key, Some(system), &diff_content).await;
+    let res = chat(url, model_name, api_key, Some(system), &diff_content, cli.verbose).await;
     if let Err(e) = res {
         ai_generating_error(&format!("Error: {}", e), cli.auto_add && changes.len() > 0);
         return;
@@ -197,27 +193,14 @@ pub async fn run_cli(cli: &GimCli, mut config: toml::Value) {
 
     let mut commit_subject = cli.title.clone();
     if commit_subject.is_none() {
-        let system = r#"You are an expert developer specialist in creating git commits messages.
-        Your only goal is to retrieve a single commit message.
-        Based on the provided user changes, combine them in ONE SINGLE commit message retrieving the global idea, following strictly the next rules:
-        - Assign the commit {type} according to the next conditions:
-            feat: Only when adding a new feature.
-            fix: When fixing a bug.
-            docs: When updating documentation.
-            style: When changing elements styles or design and/or making changes to the code style (formatting, missing semicolons, etc.) without changing the code logic.
-            test: When adding or updating tests.
-            chore: When making changes to the build process or auxiliary tools and libraries.
-            revert: When undoing a previous commit.
-            refactor: When restructuring code without changing its external behavior, or is any of the other refactor types.
-        - Do not add any issues numeration, explain your output nor introduce your answer.
-        - Output directly only one commit message in plain text with the next format: {type}: {commit_message}.
-        - Be as concise as possible, keep the message under 50 characters or letters."#;
+        let system = SUBJECT_PROMPT;
         let res = chat(
             url,
             model_name,
             api_key,
             Some(system),
             &format!("The changes are: \n{}", answer),
+            cli.verbose,
         )
         .await;
 
@@ -255,7 +238,7 @@ pub async fn run_cli(cli: &GimCli, mut config: toml::Value) {
 
     if commit_output.status.success() {
         print_verbose(cli, "Run 'git commit -m <subject> -m <message>'");
-        println!("Successfully committed changes!");
+        println!("✅ Successfully committed changes! If you were discontent with the commit message and want to polish or revise it, run 'gim -u' or 'git commit --amend'");
     } else {
         eprintln!(
             "Error: Failed to commit changes - {}",
@@ -274,5 +257,23 @@ fn ai_generating_error(abort: &str, auto_add: bool) {
 fn print_verbose(cli: &GimCli, log: &str) {
     if cli.verbose {
         println!("{}", log);
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use crate::{cli::{command::GimCli, entry::run_cli}, config::get_config_into};
+
+    #[tokio::test]
+    async fn test_run_cli() {
+        let config = get_config_into().expect("Failed to access config file");
+        let cli = GimCli {
+            command: None,
+            auto_add: false,
+            update: true,
+            title: None,
+            verbose: true,
+        };
+        run_cli(&cli, config).await;
     }
 }

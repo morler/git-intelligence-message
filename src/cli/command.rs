@@ -15,7 +15,7 @@ pub struct GimCli {
     pub auto_add: bool,
 
     /// Ammend the last commit
-    #[arg(short, long, default_value_t = false)]
+    #[arg(short = 'p', long, default_value_t = false)]
     pub update: bool,
 
     /// Show verbose output
