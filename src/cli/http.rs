@@ -81,7 +81,6 @@ pub async fn chat(
     let url = check_url(url, model_name);
     if log_info {
         println!("ai request url: {}", url);
-        println!("ai request body: {:?}", request_body);
     }
 
     // 发送请求
