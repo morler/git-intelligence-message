@@ -25,6 +25,13 @@ pub struct GimCli {
 
 #[derive(Subcommand)]
 pub enum GimCommands {
+    /// Check for updates and install the latest version
+    Update {
+        /// Force update even if the current version is the latest
+        #[arg(short, long, default_value_t = false)]
+        force: bool,
+    },
+    
     /// Setup the ai-api configuration
     Ai {
         /// the ai model name

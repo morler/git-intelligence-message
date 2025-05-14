@@ -40,6 +40,22 @@ cargo install --path .
 
 ## Command Line Interface
 
+### Update
+
+Check for updates and install the latest version:
+
+```bash
+gim update
+```
+
+Force update even if you're on the latest version:
+
+```bash
+gim update --force
+```
+
+The application will automatically check for updates when you run it.
+
 ### Basic Usage
 
 ```bash

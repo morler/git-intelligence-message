@@ -1,5 +1,17 @@
 # Changelog
 
+## [1.2.0] - 2025-05-19
+
+### Added
+- New `update` command to check for and install updates
+  - Added `--force` flag to force reinstall even when on the latest version
+- Automatic update check on application start
+
+### Changed
+- Updated dependencies
+- Removed `self-update` dependency as we're now using Homebrew for updates
+- Improved error handling for update process
+
 ## [1.1.0] - 2025-05-19
 
 ### Added
