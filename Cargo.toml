@@ -2,6 +2,18 @@
 name = "git-intelligence-message"
 version = "1.0.0"
 edition = "2021"
+description = "An advanced Git commit message generation utility with AI assistance"
+authors = ["Sheldon.Wei<sheldon.sh.hb@gmail.com>"]
+license = "MIT"
+repository = "https://github.com/davelet/git-intelligence-message"
+readme = "README.md"
+keywords = ["git", "commit", "ai", "cli"]
+categories = ["command-line-utilities"]
+
+[profile.release]
+opt-level = 3
+lto = true
+codegen-units = 1
 
 [dependencies]
 clap = { version = "4.4", features = ["derive"]}
