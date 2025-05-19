@@ -1,6 +1,42 @@
-# Git Intelligence Message (GIM)
+# Git Intelligence Message (GIM) 🚀
+
+[![Crates.io](https://img.shields.io/crates/v/git-intelligence-message)](https://crates.io/crates/git-intelligence-message)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![CI](https://github.com/yourusername/git-intelligence-message/actions/workflows/ci.yml/badge.svg)](https://github.com/yourusername/git-intelligence-message/actions/workflows/ci.yml)
 
 An advanced Git commit message generation utility designed to automatically craft high-quality commit messages with precision and sophistication.
+
+## Features
+
+- 🤖 AI-powered commit message generation
+- ⚡ Lightning fast Rust implementation
+- 🔧 Easy configuration for various AI providers
+- 🌍 Multi-language support
+- 🔄 Automatic git staging (optional)
+- ✏️ Amend previous commits
+
+## Installation
+
+### Using Homebrew (macOS/Linux)
+
+```bash
+brew tap yourusername/tap
+brew install git-intelligence-message
+```
+
+### Using Cargo
+
+```bash
+cargo install git-intelligence-message
+```
+
+### Build from source
+
+```bash
+git clone https://github.com/yourusername/git-intelligence-message.git
+cd git-intelligence-message
+cargo install --path .
+```
 
 ## Command Line Interface
 
