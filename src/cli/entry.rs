@@ -262,7 +262,9 @@ fn print_verbose(cli: &GimCli, log: &str) {
 
 #[cfg(test)]
 mod tests {
-    use crate::{cli::{command::GimCli, entry::run_cli}, config::get_config_into};
+    use gim_config::config::get_config_into;
+
+    use crate::cli::{command::GimCli, entry::run_cli};
 
     #[tokio::test]
     async fn test_run_cli() {
