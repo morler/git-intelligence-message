@@ -1,8 +1,7 @@
 use cli::{command::GimCli, entry::run_cli};
-use config::get_config_into;
+use gim_config::config::get_config_into;
 
 mod cli;
-mod config;
 mod constants;
 
 #[tokio::main]

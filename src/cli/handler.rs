@@ -1,4 +1,5 @@
 use std::io::Result;
+use gim_config::config;
 use toml;
 
 pub fn update_ai_config(
@@ -36,11 +37,11 @@ pub fn update_ai_config(
         );
     }
 
-    crate::config::save_config(config);
+    config::save_config(config);
 }
 
 pub fn get_ai_config() -> Result<toml::Value> {
-    let toml = crate::config::get_config_into_toml(false);
+    let toml = config::get_config_into_toml(false);
     if toml.is_err() {
         toml
     } else if let Ok(toml) = toml {

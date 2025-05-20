@@ -7,20 +7,28 @@ use super::{
 use std::process::Command;
 
 pub async fn run_cli(cli: &GimCli, mut config: toml::Value) {
-    if let Some(GimCommands::Ai {
-        model,
-        apikey,
-        url,
-        language,
-    }) = &cli.command
-    {
-        if model.is_none() && apikey.is_none() && url.is_none() && language.is_none() {
-            eprintln!("Error: At least one of ai section parameter must be provided when setup ai section");
+    match &cli.command {
+        Some(GimCommands::Update { force }) => {
+            if let Err(e) = crate::cli::update::check_and_install_update(*force).await {
+                eprintln!("Failed to update: {}", e);
+                std::process::exit(1);
+            }
             return;
-        }
-
-        super::handler::update_ai_config(&mut config, model, apikey, url, language);
-        return;
+        },
+        Some(GimCommands::Ai {
+            model,
+            apikey,
+            url,
+            language,
+        }) => {
+            if model.is_none() && apikey.is_none() && url.is_none() && language.is_none() {
+                eprintln!("Error: At least one of ai section parameter must be provided when setup ai section");
+                return;
+            }
+            super::handler::update_ai_config(&mut config, model, apikey, url, language);
+            return;
+        },
+        None => {}
     }
 
     // Check if current directory is a git repository
@@ -262,7 +270,9 @@ fn print_verbose(cli: &GimCli, log: &str) {
 
 #[cfg(test)]
 mod tests {
-    use crate::{cli::{command::GimCli, entry::run_cli}, config::get_config_into};
+    use gim_config::config::get_config_into;
+
+    use crate::cli::{command::GimCli, entry::run_cli};
 
     #[tokio::test]
     async fn test_run_cli() {

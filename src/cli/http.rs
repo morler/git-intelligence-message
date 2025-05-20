@@ -130,6 +130,9 @@ fn check_url(url: &str, model_name: &str) -> String {
     if model_name.starts_with("gemini") {
         return crate::constants::GEMINI_URL.to_string();
     }
+    if model_name.starts_with("doubao") {
+        return crate::constants::DOUBAO_URL.to_string();
+    }
     eprintln!("Error: please setup ai url first");
     std::process::exit(1);
 }
