@@ -1,5 +1,6 @@
 pub mod command;
 pub mod entry;
-pub mod handler;
+pub mod ai_configer;
 pub mod http;
 pub mod update;
+pub mod verbose;

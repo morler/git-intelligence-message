@@ -1,4 +1,7 @@
-use crate::constants::{DIFF_PROMPT, SUBJECT_PROMPT};
+use crate::{
+    constants::{DIFF_PROMPT, SUBJECT_PROMPT},
+    verbose::print_verbose,
+};
 
 use super::{
     command::{GimCli, GimCommands},
@@ -14,7 +17,7 @@ pub async fn run_cli(cli: &GimCli, mut config: toml::Value) {
                 std::process::exit(1);
             }
             return;
-        },
+        }
         Some(GimCommands::Ai {
             model,
             apikey,
@@ -25,9 +28,9 @@ pub async fn run_cli(cli: &GimCli, mut config: toml::Value) {
                 eprintln!("Error: At least one of ai section parameter must be provided when setup ai section");
                 return;
             }
-            super::handler::update_ai_config(&mut config, model, apikey, url, language);
+            super::ai_configer::update_ai_config(&mut config, model, apikey, url, language);
             return;
-        },
+        }
         None => {}
     }
 
@@ -54,13 +57,10 @@ pub async fn run_cli(cli: &GimCli, mut config: toml::Value) {
         ])
         .output()
         .expect("Failed to get git status");
-    print_verbose(
-        cli,
-        &format!(
-            "Run 'git status -s --untracked-files={}'",
-            if cli.auto_add { "all" } else { "no" }
-        ),
-    );
+    print_verbose(&format!(
+        "Run 'git status -s --untracked-files={}'",
+        if cli.auto_add { "all" } else { "no" }
+    ));
     let status_str = String::from_utf8_lossy(&status_output.stdout);
     let changes: Vec<&str> = status_str.lines().collect();
     let mut diff_content = String::new();
@@ -88,16 +88,15 @@ pub async fn run_cli(cli: &GimCli, mut config: toml::Value) {
                 eprintln!("Error: Failed to add changes to git");
                 return;
             }
-            print_verbose(cli, "Run 'git add .'");
+            print_verbose("Run 'git add .'");
         }
-
 
         // Get staged changes
         let diff_output = Command::new("git")
             .args(["diff", "--cached"])
             .output()
             .expect("Failed to get git diff --cached");
-        print_verbose(cli, "Run 'git diff --cached'");
+        print_verbose("Run 'git diff --cached'");
         if !diff_output.stdout.is_empty() {
             diff_content.push_str("When I use `git diff`, I got the following output: \n");
             diff_content.push_str(&String::from_utf8_lossy(&diff_output.stdout));
@@ -114,19 +113,19 @@ pub async fn run_cli(cli: &GimCli, mut config: toml::Value) {
             .args(["show", "--pretty=format:", "HEAD"])
             .output()
             .expect("Failed to get git show");
-        print_verbose(cli, "Run 'git show --pretty=format: HEAD'");
+        print_verbose("Run 'git show --pretty=format: HEAD'");
         diff_content.push_str(&String::from_utf8_lossy(&show_output.stdout));
         diff_content.push_str("\n");
         println!("As '-p' option is enabled, I will amend the last commit message");
     }
     if diff_content.is_empty() {
-        println!("No changes found. To update last commit message, please use '-u' option");
+        println!("No changes found. To update last commit message, please use '-p' option");
         return;
     }
 
     let system = DIFF_PROMPT;
 
-    let ai_config = super::handler::get_ai_config();
+    let ai_config = super::ai_configer::get_ai_config();
     if ai_config.is_err() {
         ai_generating_error(
             "Error: ai section is not configured, abort",
@@ -192,7 +191,15 @@ pub async fn run_cli(cli: &GimCli, mut config: toml::Value) {
             language
         ));
     }
-    let res = chat(url, model_name, api_key, Some(system), &diff_content, cli.verbose).await;
+    let res = chat(
+        url,
+        model_name,
+        api_key,
+        Some(system),
+        &diff_content,
+        cli.verbose,
+    )
+    .await;
     if let Err(e) = res {
         ai_generating_error(&format!("Error: {}", e), cli.auto_add && changes.len() > 0);
         return;
@@ -222,14 +229,19 @@ pub async fn run_cli(cli: &GimCli, mut config: toml::Value) {
         }
     }
     let commit_subject = commit_subject.unwrap();
-    if cli.verbose {
-        println!("AI chat content ('-v' enabled): {}", diff_content);
-    }
+    print_verbose(&format!("AI chat content: {}", diff_content));
+    println!();
     println!(
-        ">>>>>>>>>>>>>>>>>>>>>>>>>\nCommit subject: {}",
+        r#"
+        >>>>>>>>>>>>>>>>>>>>>>>>>
+        Commit subject: "{}""#,
         commit_subject
     );
-    println!("Commit message: {}\n<<<<<<<<<<<<<<<<<<<<<<<<<", answer);
+    println!(
+        r#"Commit message: "{}"
+    <<<<<<<<<<<<<<<<<<<<<<<<<"#,
+        answer
+    );
 
     // Prepare commit message
     let mut commit_args = vec!["commit"];
@@ -239,14 +251,14 @@ pub async fn run_cli(cli: &GimCli, mut config: toml::Value) {
     commit_args.extend(["-m", &commit_subject, "-m", &answer]);
 
     // Execute git commit
+    print_verbose("Run 'git commit -m <subject> -m <message>'");
     let commit_output = Command::new("git")
         .args(&commit_args)
         .output()
         .expect("Failed to execute git commit");
 
     if commit_output.status.success() {
-        print_verbose(cli, "Run 'git commit -m <subject> -m <message>'");
-        println!("✅ Successfully committed changes! If you were discontent with the commit message and want to polish or revise it, run 'gim -u' or 'git commit --amend'");
+        println!("✅ Successfully committed changes! If you were discontent with the commit message and want to polish or revise it, run 'gim -p' or 'git commit --amend'");
     } else {
         eprintln!(
             "Error: Failed to commit changes - {}",
@@ -258,25 +270,19 @@ pub async fn run_cli(cli: &GimCli, mut config: toml::Value) {
 fn ai_generating_error(abort: &str, auto_add: bool) {
     eprintln!("{}", abort);
     if auto_add {
-        println!("Noted: your changes are added to git");
-    }
-}
-
-fn print_verbose(cli: &GimCli, log: &str) {
-    if cli.verbose {
-        println!("{}", log);
+        println!("Noted: your changes are added to git staged area");
     }
 }
 
 #[cfg(test)]
 mod tests {
-    use gim_config::config::get_config_into;
+    use gim_config::config::get_config;
 
     use crate::cli::{command::GimCli, entry::run_cli};
 
     #[tokio::test]
     async fn test_run_cli() {
-        let config = get_config_into().expect("Failed to access config file");
+        let config = get_config().expect("Failed to access config file");
         let cli = GimCli {
             command: None,
             auto_add: false,

@@ -1,6 +1,13 @@
 # Changelog
 
-## [1.2.0] - 2025-05-19
+## [1.2.1] - 2025-05-21
+
+### Restored
+- It’s a sad story. All the code I’d been working on for days was suddenly gone. Luckily, I happened to try the IDE’s REDO function, and it turned out to be incredibly helpful. In the end, I was able to get back almost everything.
+- Automatic update check on application start (unimplemented in previous version)
+- Add url constant for Duobao model
+
+## [1.2.0] - 2025-05-20
 
 ### Added
 - New `update` command to check for and install updates
@@ -9,7 +16,6 @@
 
 ### Changed
 - Updated dependencies
-- Removed `self-update` dependency as we're now using Homebrew for updates
 - Improved error handling for update process
 
 ## [1.1.0] - 2025-05-19

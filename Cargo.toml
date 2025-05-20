@@ -1,6 +1,6 @@
 [package]
 name = "git-intelligence-message"
-version = "1.2.0"
+version = "1.2.1"
 edition = "2021"
 description = "An advanced Git commit message generation utility with AI assistance"
 authors = ["Sheldon.Wei<sheldon.sh.hb@gmail.com>"]
@@ -16,17 +16,20 @@ lto = true
 codegen-units = 1
 
 [dependencies]
-gim-config = "0.1.0"
+gim-config = "0.2.0"
 clap = { version = "4.4", features = ["derive"]}
 serde = { version = "1.0", features = ["derive"]}
 serde_json = "1.0"
 dirs = "5.0"
-toml = "0.8"
-reqwest = { version = "0.11", features = ["json"]}
+toml = { version = "0.8", features = ["preserve_order"] }
+reqwest = { version = "0.11", features = ["json"] }
 tokio = { version = "1", features = ["full"] }
-validator = { version = "0.16", features = ["derive"]}
-
+validator = { version = "0.16", features = ["derive"] }
+chrono = { version = "0.4", features = ["serde"] }
 semver = "1.0"
+log = "0.4"
+pretty_env_logger = "0.5"
+lazy_static = "1.4"
 
 [[bin]]
 name = "gim"
