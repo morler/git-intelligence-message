@@ -1,3 +1,5 @@
+pub const REPOSITORY: &str = "git-intelligence-message";
+
 pub const MONOSHOT_URL: &str = "https://api.moonshot.cn/v1/chat/completions";
 pub const QWEN_URL: &str = "https://dashscope.aliyuncs.com/compatible-mode/v1/chat/completions";
 pub const GPT_URL: &str = "https://api.openai.com/v1/chat/completions";
