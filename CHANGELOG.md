@@ -1,5 +1,14 @@
 # Changelog
 
+## [1.2.2] - 2025-05-22
+
+### Added
+- Added support for new AI model endpoints:
+  - GLM (ChatGLM)
+  - DeepSeek
+  - Qianfan (Baidu)
+- Updated HTTP client to handle the new model endpoints
+
 ## [1.2.1] - 2025-05-21
 
 ### Restored

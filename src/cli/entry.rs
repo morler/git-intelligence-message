@@ -233,13 +233,15 @@ pub async fn run_cli(cli: &GimCli, mut config: toml::Value) {
     println!();
     println!(
         r#"
-        >>>>>>>>>>>>>>>>>>>>>>>>>
-        Commit subject: "{}""#,
+>>>>>>>>>>>>>>>>>>>>>>>>>
+Commit subject: "{}""#,
         commit_subject
     );
     println!(
-        r#"Commit message: "{}"
-    <<<<<<<<<<<<<<<<<<<<<<<<<"#,
+        r#"
+Commit message: "{}"
+<<<<<<<<<<<<<<<<<<<<<<<<<
+"#,
         answer
     );
 

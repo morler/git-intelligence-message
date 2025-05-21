@@ -133,6 +133,15 @@ fn check_url(url: &str, model_name: &str) -> String {
     if model_name.starts_with("doubao") {
         return crate::constants::DOUBAO_URL.to_string();
     }
+    if model_name.starts_with("glm") {
+        return crate::constants::GLM_URL.to_string();
+    }
+    if model_name.starts_with("deepseek") {
+        return crate::constants::DEEPSEEK_URL.to_string();
+    }
+    if model_name.starts_with("qianfan") {
+        return crate::constants::QIANFAN_URL.to_string();
+    }
     eprintln!("Error: please setup ai url first");
     std::process::exit(1);
 }
