@@ -60,7 +60,7 @@ pub async fn chat(
     url: &str,
     model_name: &str,
     api_key: &str,
-    system: Option<&str>,
+    system: Option<String>,
     user: &str,
     log_info: bool,
 ) -> Result<String, Box<dyn Error>> {
@@ -75,7 +75,7 @@ pub async fn chat(
     if let Some(system) = system {
         request_body.messages.push(Message {
             role: "system".to_string(),
-            content: system.to_string(),
+            content: system,
         });
     }
     let url = check_url(url, model_name);
@@ -156,7 +156,7 @@ mod tests {
             crate::constants::QWEN_URL,
             "qwen2.5-0.5b-instruct",
             "sk-",
-            Some("You are a helpful assistant."),
+            Some("You are a helpful assistant.".to_string()),
             "讲个笑话",
             false,
         )

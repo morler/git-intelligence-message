@@ -1,5 +1,5 @@
-use std::io::Result;
 use gim_config::config;
+use std::io::Result;
 use toml;
 
 pub fn update_ai_config(
@@ -37,7 +37,9 @@ pub fn update_ai_config(
         );
     }
 
-    config::save_config(config);
+    if let Err(e) = config::save_config(config) {
+        eprintln!("Failed to save AI info to file: {}", e)
+    }
 }
 
 pub fn get_ai_config() -> Result<toml::Value> {

@@ -1,6 +1,20 @@
 # Changelog
 
-## [1.2.2] - 2025-05-22
+## [1.3.0] - 2025-05-22
+
+### Added
+- New `prompt` subcommand to manage AI prompt templates
+  - View both diff and subject prompt templates
+  - Edit prompt files with `--edit` flag
+  - Support for custom editors with `--editor` option
+  - Cross-platform file management (macOS, Windows, Linux)
+  - Short aliases for prompt types (d/diff/diff_prompt, s/subject/subject_prompt)
+
+### Changed
+- Improved error handling and user feedback for prompt operations
+- More descriptive command-line help text for prompt management
+
+## [1.2.2] - 2025-05-21
 
 ### Added
 - Added support for new AI model endpoints:
