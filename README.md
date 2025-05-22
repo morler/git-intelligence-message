@@ -1,5 +1,6 @@
 # Git Intelligence Message (GIM) 🚀
 
+[![Crates.io](https://img.shields.io/crates/v/git-intelligence-message)](https://crates.io/crates/git-intelligence-message)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
 An advanced Git commit message generation utility designed to automatically craft high-quality commit messages with precision and sophistication.
@@ -18,8 +19,12 @@ An advanced Git commit message generation utility designed to automatically craf
 ### Using Homebrew (macOS/Linux)
 
 ```bash
-brew tap davelet/tap
+brew tap davelet/gim
 brew install git-intelligence-message
+```
+or
+```bash
+brew install davelet/gim/git-intelligence-message
 ```
 
 ### Using Cargo
@@ -37,22 +42,6 @@ cargo install --path .
 ```
 
 ## Command Line Interface
-
-### Update
-
-Check for updates and install the latest version:
-
-```bash
-gim update
-```
-
-Force update even if you're on the latest version:
-
-```bash
-gim update --force
-```
-
-The application will automatically check for updates when you run it.
 
 ### Basic Usage
 
@@ -113,24 +102,6 @@ Prompt types:
 
 ### AI Configuration
 
-#### Built-in Model Support
-
-The following model prefixes are supported with their respective default endpoints:
-
-| Model Prefix   | Service Provider | Default Endpoint |
-|----------------|------------------|------------------|
-| `gpt-*`       | OpenAI           | `https://api.openai.com/v1/chat/completions` |
-| `moonshot-*`  | Moonshot AI      | `https://api.moonshot.cn/v1/chat/completions` |
-| `qwen-*`      | Alibaba Qwen     | `https://dashscope.aliyuncs.com/compatible-mode/v1/chat/completions` |
-| `gemini-*`    | Google Gemini    | `https://generativelanguage.googleapis.com/v1beta/openai/` |
-| `doubao-*`    | ByteDance Doubao | `https://ark.cn-beijing.volces.com/api/v3/chat/completions` |
-| `glm-*`       | THUDM GLM        | `https://open.bigmodel.cn/api/paas/v4/chat/completions` |
-| `deepseek-*`  | DeepSeek         | `https://api.deepseek.com/chat/completions` |
-| `qianfan-*`   | Baidu Qianfan    | `https://qianfan.baidubce.com/v2/chat/completions` |
-
-
-You can use any model name starting with these prefixes, and the corresponding endpoint will be used automatically (so you don't need to set `--url`).
-
 #### Configuration
 
 Utilise the `gim ai` command to configure AI-related parameters:
@@ -158,3 +129,37 @@ gim ai --language "your-language"
 - `-u, --url <STRING>`: Set the API endpoint for AI service
 - `-l, --language <STRING>`: Define the language for generated commit messages
 - `-v, --verbose`: Show verbose output including AI chat content
+
+#### Built-in Model Support
+
+The following model prefixes are supported with their respective default endpoints:
+
+| Model Prefix   | Service Provider | Default Endpoint |
+|----------------|------------------|------------------|
+| `gpt-*`       | OpenAI           | `https://api.openai.com/v1/chat/completions` |
+| `moonshot-*`  | Moonshot AI      | `https://api.moonshot.cn/v1/chat/completions` |
+| `qwen-*`      | Alibaba Qwen     | `https://dashscope.aliyuncs.com/compatible-mode/v1/chat/completions` |
+| `gemini-*`    | Google Gemini    | `https://generativelanguage.googleapis.com/v1beta/openai/` |
+| `doubao-*`    | ByteDance Doubao | `https://ark.cn-beijing.volces.com/api/v3/chat/completions` |
+| `glm-*`       | THUDM GLM        | `https://open.bigmodel.cn/api/paas/v4/chat/completions` |
+| `deepseek-*`  | DeepSeek         | `https://api.deepseek.com/chat/completions` |
+| `qianfan-*`   | Baidu Qianfan    | `https://qianfan.baidubce.com/v2/chat/completions` |
+
+
+You can use any model name starting with these prefixes, and the corresponding endpoint will be used automatically (so you don't need to set `--url`).
+
+### Update
+
+Check for updates and install the latest version:
+
+```bash
+gim update
+```
+
+Force update even if you're on the latest version:
+
+```bash
+gim update --force
+```
+
+The application will automatically check for updates when you run it.
