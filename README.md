@@ -1,8 +1,6 @@
 # Git Intelligence Message (GIM) 🚀
 
-[![Crates.io](https://img.shields.io/crates/v/git-intelligence-message)](https://crates.io/crates/git-intelligence-message)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![CI](https://github.com/yourusername/git-intelligence-message/actions/workflows/ci.yml/badge.svg)](https://github.com/yourusername/git-intelligence-message/actions/workflows/ci.yml)
 
 An advanced Git commit message generation utility designed to automatically craft high-quality commit messages with precision and sophistication.
 
@@ -20,7 +18,7 @@ An advanced Git commit message generation utility designed to automatically craf
 ### Using Homebrew (macOS/Linux)
 
 ```bash
-brew tap yourusername/tap
+brew tap davelet/tap
 brew install git-intelligence-message
 ```
 
@@ -33,7 +31,7 @@ cargo install git-intelligence-message
 ### Build from source
 
 ```bash
-git clone https://github.com/yourusername/git-intelligence-message.git
+git clone https://github.com/davelet/git-intelligence-message.git
 cd git-intelligence-message
 cargo install --path .
 ```
@@ -82,7 +80,7 @@ gim
 gim -a
 
 # Amend the most recent commit
-gim -apv
+gim -ap
 ```
 
 ### Command Options
@@ -91,7 +89,49 @@ gim -apv
 - `-a, --auto-add`: Automatically stage all modifications
 - `-p, --update`: Amend the most recent commit
 
+### Prompt Management
+
+View and edit the AI prompt templates used for generating commit messages:
+
+```bash
+# View current prompt templates
+gim prompt
+
+# Open the prompt files in default file manager for editing
+gim prompt --edit
+
+# Edit a specific prompt file with default editor
+gim prompt --edit --prompt diff
+
+# Edit a specific prompt file with custom editor
+gim prompt --edit --prompt subject --editor code
+```
+
+Prompt types:
+- `d`, `diff`, `diff_prompt`: Diff analysis prompt template
+- `s`, `subject`, `subject_prompt`: Commit subject generation prompt template
+
 ### AI Configuration
+
+#### Built-in Model Support
+
+The following model prefixes are supported with their respective default endpoints:
+
+| Model Prefix   | Service Provider | Default Endpoint |
+|----------------|------------------|------------------|
+| `gpt-*`       | OpenAI           | `https://api.openai.com/v1/chat/completions` |
+| `moonshot-*`  | Moonshot AI      | `https://api.moonshot.cn/v1/chat/completions` |
+| `qwen-*`      | Alibaba Qwen     | `https://dashscope.aliyuncs.com/compatible-mode/v1/chat/completions` |
+| `gemini-*`    | Google Gemini    | `https://generativelanguage.googleapis.com/v1beta/openai/` |
+| `doubao-*`    | ByteDance Doubao | `https://ark.cn-beijing.volces.com/api/v3/chat/completions` |
+| `glm-*`       | THUDM GLM        | `https://open.bigmodel.cn/api/paas/v4/chat/completions` |
+| `deepseek-*`  | DeepSeek         | `https://api.deepseek.com/chat/completions` |
+| `qianfan-*`   | Baidu Qianfan    | `https://qianfan.baidubce.com/v2/chat/completions` |
+
+
+You can use any model name starting with these prefixes, and the corresponding endpoint will be used automatically (so you don't need to set `--url`).
+
+#### Configuration
 
 Utilise the `gim ai` command to configure AI-related parameters:
 
@@ -109,7 +149,7 @@ gim ai --url "your-api-url"
 gim ai --language "your-language"
 ```
 
-> 注意：`--url` 参数仅支持 OpenAI 兼容的 API 地址（如 OpenAI 官方或兼容 OpenAI 协议的第三方服务端点），不支持非 OpenAI 格式的 API。
+> Important: The `--url` parameter only supports OpenAI-compatible API endpoints ,such as OpenAI official or third-party services compatible with OpenAI protocol.
 
 #### AI Configuration Options
 
@@ -118,24 +158,3 @@ gim ai --language "your-language"
 - `-u, --url <STRING>`: Set the API endpoint for AI service
 - `-l, --language <STRING>`: Define the language for generated commit messages
 - `-v, --verbose`: Show verbose output including AI chat content
-
-## Workflow
-
-View the workflow diagram through https://mermaid.live/:
-```mermaid
-graph TD
-    A[Start] --> B{AI Command Present?}
-    B -- Yes --> C[Execute Parameter Configuration]
-    B -- No --> D{Add Command Present?}
-    D -- Yes --> E[Automatic git add]
-    D -- No --> G[Collect Staged Changes]
-    E --> G
-    G --> H{Update Parameter Present?}
-    H -- Yes --> I[Collect Previous Commit Changes]
-    H -- No --> K[Generate Description from Changes]
-    I --> K
-    K --> L{Title Parameter Present?}
-    L -- Yes --> O
-    L -- No --> N[Generate Title from Description]
-    N --> O[Commit with Title and Description]
-```

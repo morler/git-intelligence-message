@@ -1,5 +1,5 @@
 use crate::{
-    constants::{DIFF_PROMPT, SUBJECT_PROMPT},
+    cli::prompt::{get_diff_prompt, get_subject_prompt, DIFF_PROMPT_FILE, SUBJECT_PROMPT_FILE},
     verbose::print_verbose,
 };
 
@@ -7,6 +7,7 @@ use super::{
     command::{GimCli, GimCommands},
     http::chat,
 };
+use gim_config::directory;
 use std::process::Command;
 
 pub async fn run_cli(cli: &GimCli, mut config: toml::Value) {
@@ -14,6 +15,17 @@ pub async fn run_cli(cli: &GimCli, mut config: toml::Value) {
         Some(GimCommands::Update { force }) => {
             if let Err(e) = crate::cli::update::check_and_install_update(*force).await {
                 eprintln!("Failed to update: {}", e);
+                std::process::exit(1);
+            }
+            return;
+        }
+        Some(GimCommands::Prompt {
+            edit,
+            prompt,
+            editor,
+        }) => {
+            if let Err(e) = handle_prompt_command(*edit, prompt.as_deref(), editor.as_deref()) {
+                eprintln!("Error: {}", e);
                 std::process::exit(1);
             }
             return;
@@ -123,7 +135,7 @@ pub async fn run_cli(cli: &GimCli, mut config: toml::Value) {
         return;
     }
 
-    let system = DIFF_PROMPT;
+    let system = get_diff_prompt();
 
     let ai_config = super::ai_configer::get_ai_config();
     if ai_config.is_err() {
@@ -208,7 +220,7 @@ pub async fn run_cli(cli: &GimCli, mut config: toml::Value) {
 
     let mut commit_subject = cli.title.clone();
     if commit_subject.is_none() {
-        let system = SUBJECT_PROMPT;
+        let system = get_subject_prompt();
         let res = chat(
             url,
             model_name,
@@ -267,6 +279,101 @@ Commit message: "{}"
             String::from_utf8_lossy(&commit_output.stderr)
         );
     }
+}
+
+fn handle_prompt_command(
+    edit: bool,
+    prompt: Option<&str>,
+    editor: Option<&str>,
+) -> Result<(), Box<dyn std::error::Error>> {
+    let config_dir = directory::config_dir()?;
+    let diff_prompt_path = config_dir.join(DIFF_PROMPT_FILE);
+    let subject_prompt_path = config_dir.join(SUBJECT_PROMPT_FILE);
+
+    let diff_prompt = get_diff_prompt();
+    let subject_prompt = get_subject_prompt();
+
+    if edit {
+        if let Some(prompt_type) = prompt {
+            let file_path = match prompt_type.to_lowercase().as_str() {
+                "d" | "diff" | "diff_prompt" | DIFF_PROMPT_FILE => diff_prompt_path,
+                "s" | "subject" | "subject_prompt" | SUBJECT_PROMPT_FILE => subject_prompt_path,
+                _ => {
+                    return Err(format!(
+                        "Unknown prompt type '{}'. Use 'd' or 'diff' or 'diff_prompt' for diff prompt, and 's' or 'subject' or 'subject_prompt' for subject prompt",
+                        prompt_type
+                    )
+                    .into())
+                }
+            };
+
+            if let Some(editor) = editor {
+                // Use the specified editor
+                if let Err(e) = Command::new(editor).arg(&file_path).status() {
+                    eprintln!("Failed to open file with editor '{}': {}", editor, e);
+                }
+            } else {
+                // Open the directory with default file manager
+                if cfg!(target_os = "macos") {
+                    Command::new("open")
+                        .arg("-R") // Reveal in Finder
+                        .arg(&file_path)
+                        .status()?;
+                } else if cfg!(target_os = "windows") {
+                    Command::new("explorer")
+                        .arg("/select,")
+                        .arg(&file_path)
+                        .status()?;
+                } else {
+                    // Linux and others
+                    if let Err(_) = Command::new("xdg-open")
+                        .arg(file_path.parent().unwrap_or_else(|| ".".as_ref()))
+                        .status()
+                    {
+                        return Err(
+                            "Failed to open file manager. Please specify an editor with --editor"
+                                .into(),
+                        );
+                    }
+                }
+            }
+        } else {
+            // Open the directory with default file manager
+            if cfg!(target_os = "macos") {
+                Command::new("open")
+                    // .arg("-R") // Reveal in Finder
+                    .arg(&config_dir)
+                    .status()?;
+            } else if cfg!(target_os = "windows") {
+                Command::new("explorer").arg(&config_dir).status()?;
+            } else {
+                // Linux and others
+                Command::new("xdg-open").arg(&config_dir).status()?;
+            }
+            println!(
+                r#"
+Please edit the prompt files using your favorite editor in the popped window: {}
+1: {}
+2: {}"#,
+                config_dir.display(),
+                DIFF_PROMPT_FILE,
+                SUBJECT_PROMPT_FILE
+            );
+        }
+    } else {
+        // Show the content of both prompt files
+        println!(
+            r#"
+=== Diff Prompt ===
+{}
+
+=== Subject Prompt ===
+{}"#,
+            &diff_prompt, &subject_prompt
+        );
+    }
+
+    Ok(())
 }
 
 fn ai_generating_error(abort: &str, auto_add: bool) {

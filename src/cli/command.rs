@@ -31,7 +31,22 @@ pub enum GimCommands {
         #[arg(short, long, default_value_t = false)]
         force: bool,
     },
-    
+
+    /// Manage ai model prompt files. Show content when no options specified
+    Prompt {
+        /// Optional: Edit the prompt files
+        #[arg(short, long)]
+        edit: bool,
+
+        /// Optional: Specify which prompt to edit (d or diff or diff_prompt or subject_prompt)
+        #[arg(short = 't', long)]
+        prompt: Option<String>,
+
+        /// Optional: Specify the editor to use (e.g., vim, code, nano)
+        #[arg(short = 'o', long)]
+        editor: Option<String>,
+    },
+
     /// Setup the ai-api configuration
     Ai {
         /// the ai model name
