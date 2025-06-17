@@ -1,5 +1,14 @@
 # Changelog
 
+## [1.3.2]
+
+- add command to show 'ai' block
+
+## [1.3.1]
+
+### Changed
+- Docs rule
+
 ## [1.3.0] - 2025-05-22
 
 ### Added

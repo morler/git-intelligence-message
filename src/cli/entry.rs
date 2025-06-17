@@ -1,5 +1,5 @@
 use crate::{
-    cli::prompt::{get_diff_prompt, get_subject_prompt, DIFF_PROMPT_FILE, SUBJECT_PROMPT_FILE},
+    cli::{http::get_url_by_model, prompt::{get_diff_prompt, get_subject_prompt, DIFF_PROMPT_FILE, SUBJECT_PROMPT_FILE}},
     verbose::print_verbose,
 };
 
@@ -37,7 +37,27 @@ pub async fn run_cli(cli: &GimCli, mut config: toml::Value) {
             language,
         }) => {
             if model.is_none() && apikey.is_none() && url.is_none() && language.is_none() {
-                eprintln!("Error: At least one of ai section parameter must be provided when setup ai section");
+                let ai = get_validated_ai_config(false, false);
+                if let Some(ai) = ai {
+                    let mut url = ai.0;
+                    if url.is_empty() && !ai.1.is_empty() {
+                        if let Some(str) = get_url_by_model(&ai.1) {
+                            url = format!("(not configured. Will use default : {})", str);
+                        } else {
+                            eprintln!("Warning: you have not setup api url by 'gim ai -u <url>'");
+                        }
+                    }
+                    println!(
+                        r#"Model:      {}
+API Key:    {}
+URL:        {}
+Language:   {}
+You can use 'gim ai -m <model> -k <apikey> -u <url> -l <language>' respectively to update the configuration"#,
+                        &ai.1, &ai.2, &url, &ai.3
+                    );
+                } else {
+                    eprintln!("Error: ai section is not configured");
+                }
                 return;
             }
             super::ai_configer::update_ai_config(&mut config, model, apikey, url, language);
@@ -135,67 +155,11 @@ pub async fn run_cli(cli: &GimCli, mut config: toml::Value) {
         return;
     }
 
-    let system = get_diff_prompt();
-
-    let ai_config = super::ai_configer::get_ai_config();
-    if ai_config.is_err() {
-        ai_generating_error(
-            "Error: ai section is not configured, abort",
-            cli.auto_add && changes.len() > 0,
-        );
+    let config_result = get_validated_ai_config(cli.auto_add, changes.len() > 0);
+    if config_result.is_none() {
         return;
     }
-    let ai_config = match ai_config {
-        Ok(config) => config,
-        Err(e) => {
-            ai_generating_error(
-                &format!("Error: Failed to get AI config - {}", e),
-                cli.auto_add && changes.len() > 0,
-            );
-            return;
-        }
-    };
-
-    let url = match ai_config.get("url").and_then(|v| v.as_str()) {
-        Some(v) => v,
-        None => {
-            ai_generating_error(
-                "Error: Missing 'url' in AI config",
-                cli.auto_add && changes.len() > 0,
-            );
-            return;
-        }
-    };
-    let model_name = match ai_config.get("model").and_then(|v| v.as_str()) {
-        Some(v) => v,
-        None => {
-            ai_generating_error(
-                "Error: Missing 'model' in AI config",
-                cli.auto_add && changes.len() > 0,
-            );
-            return;
-        }
-    };
-    let api_key = match ai_config.get("apikey").and_then(|v| v.as_str()) {
-        Some(v) => v,
-        None => {
-            ai_generating_error(
-                "Error: Missing 'apikey' in AI config",
-                cli.auto_add && changes.len() > 0,
-            );
-            return;
-        }
-    };
-    let language = match ai_config.get("language").and_then(|v| v.as_str()) {
-        Some(v) => v,
-        None => {
-            ai_generating_error(
-                "Error: Missing 'language' in AI config",
-                cli.auto_add && changes.len() > 0,
-            );
-            return;
-        }
-    };
+    let (url, model_name, api_key, language) = config_result.unwrap();
 
     if language != "English" {
         diff_content.push_str(&format!(
@@ -203,12 +167,13 @@ pub async fn run_cli(cli: &GimCli, mut config: toml::Value) {
             language
         ));
     }
+    let system = get_diff_prompt();
     let res = chat(
-        url,
-        model_name,
-        api_key,
+        url.clone(),
+        model_name.clone(),
+        api_key.clone(),
         Some(system),
-        &diff_content,
+        diff_content.clone(),
         cli.verbose,
     )
     .await;
@@ -226,7 +191,7 @@ pub async fn run_cli(cli: &GimCli, mut config: toml::Value) {
             model_name,
             api_key,
             Some(system),
-            &format!("The changes are: \n{}", answer),
+            format!("The changes are: \n{}", answer),
             cli.verbose,
         )
         .await;
@@ -381,6 +346,69 @@ fn ai_generating_error(abort: &str, auto_add: bool) {
     if auto_add {
         println!("Noted: your changes are added to git staged area");
     }
+}
+
+fn get_validated_ai_config(
+    auto_add: bool,
+    changed: bool,
+) -> Option<(String, String, String, String)> {
+    let ai_config = super::ai_configer::get_ai_config();
+    if ai_config.is_err() {
+        ai_generating_error(
+            "Error: ai section is not configured, abort",
+            auto_add && changed,
+        );
+        return None;
+    }
+    let ai_config = match ai_config {
+        Ok(config) => config,
+        Err(e) => {
+            ai_generating_error(
+                &format!("Error: Failed to get AI config - {}", e),
+                auto_add && changed,
+            );
+            return None;
+        }
+    };
+
+    let url = match ai_config.get("url").and_then(|v| v.as_str()) {
+        Some(v) => v,
+        None => {
+            ai_generating_error("Error: Missing 'url' in AI config", auto_add && changed);
+            return None;
+        }
+    };
+    let model_name = match ai_config.get("model").and_then(|v| v.as_str()) {
+        Some(v) => v,
+        None => {
+            ai_generating_error("Error: Missing 'model' in AI config", auto_add && changed);
+            return None;
+        }
+    };
+    let api_key = match ai_config.get("apikey").and_then(|v| v.as_str()) {
+        Some(v) => v,
+        None => {
+            ai_generating_error("Error: Missing 'apikey' in AI config", auto_add && changed);
+            return None;
+        }
+    };
+    let language = match ai_config.get("language").and_then(|v| v.as_str()) {
+        Some(v) => v,
+        None => {
+            ai_generating_error(
+                "Error: Missing 'language' in AI config",
+                auto_add && changed,
+            );
+            return None;
+        }
+    };
+
+    Some((
+        url.to_string(),
+        model_name.to_string(),
+        api_key.to_string(),
+        language.to_string(),
+    ))
 }
 
 #[cfg(test)]
