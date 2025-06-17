@@ -57,18 +57,18 @@ struct ResponseError {
 }
 
 pub async fn chat(
-    url: &str,
-    model_name: &str,
-    api_key: &str,
+    url: String,
+    model_name: String,
+    api_key: String,
     system: Option<String>,
-    user: &str,
+    user: String,
     log_info: bool,
 ) -> Result<String, Box<dyn Error>> {
     let mut request_body = Request {
-        model: model_name.into(),
+        model: model_name,
         messages: vec![Message {
             role: "user".to_string(),
-            content: user.to_string(),
+            content: user,
         }],
         ..Default::default()
     };
@@ -78,7 +78,17 @@ pub async fn chat(
             content: system,
         });
     }
-    let url = check_url(url, model_name);
+    // let url = check_url(&url, &request_body.model);
+    let mut url = url;
+    if !url.starts_with("http") {
+        if let Some(str) = get_url_by_model(&request_body.model) {
+            url = str;
+        } else {
+            eprintln!("Error: please setup ai url first");
+            std::process::exit(1); 
+        }
+    }
+
     if log_info {
         println!("ai request url: {}", url);
     }
@@ -87,7 +97,7 @@ pub async fn chat(
     let client = reqwest::Client::new();
     let response = client
         .post(url)
-        .header("Authorization", format!("Bearer {}", api_key))
+        .header("Authorization", format!("Bearer {}", &api_key))
         .header("Content-Type", "application/json")
         .json(&request_body)
         .send()
@@ -114,36 +124,32 @@ pub async fn chat(
     Err("unkown exception".into())
 }
 
-fn check_url(url: &str, model_name: &str) -> String {
-    if url.starts_with("http") {
-        return url.to_string();
-    }
+pub fn get_url_by_model(model_name: &str) -> Option<String> {
     if model_name.starts_with("moonshot") {
-        return crate::constants::MONOSHOT_URL.to_string();
+        return Some(crate::constants::MONOSHOT_URL.to_string());
     }
     if model_name.starts_with("qwen") {
-        return crate::constants::QWEN_URL.to_string();
+        return Some(crate::constants::QWEN_URL.to_string());
     }
     if model_name.starts_with("gpt") {
-        return crate::constants::GPT_URL.to_string();
+        return Some(crate::constants::GPT_URL.to_string());
     }
     if model_name.starts_with("gemini") {
-        return crate::constants::GEMINI_URL.to_string();
+        return Some(crate::constants::GEMINI_URL.to_string());
     }
     if model_name.starts_with("doubao") {
-        return crate::constants::DOUBAO_URL.to_string();
+        return Some(crate::constants::DOUBAO_URL.to_string());
     }
     if model_name.starts_with("glm") {
-        return crate::constants::GLM_URL.to_string();
+        return Some(crate::constants::GLM_URL.to_string());
     }
     if model_name.starts_with("deepseek") {
-        return crate::constants::DEEPSEEK_URL.to_string();
+        return Some(crate::constants::DEEPSEEK_URL.to_string());
     }
     if model_name.starts_with("qianfan") {
-        return crate::constants::QIANFAN_URL.to_string();
+        return Some(crate::constants::QIANFAN_URL.to_string());
     }
-    eprintln!("Error: please setup ai url first");
-    std::process::exit(1);
+    None
 }
 
 #[cfg(test)]
@@ -153,11 +159,11 @@ mod tests {
     #[tokio::test]
     async fn test_chat_success() {
         let result = chat(
-            crate::constants::QWEN_URL,
-            "qwen2.5-0.5b-instruct",
-            "sk-",
+            crate::constants::QWEN_URL.into(),
+            "qwen2.5-0.5b-instruct".into(),
+            "sk-".into(),
             Some("You are a helpful assistant.".to_string()),
-            "讲个笑话",
+            "讲个笑话".into(),
             false,
         )
         .await;
