@@ -1,0 +1,148 @@
+# Site information
+site_name: gim 
+site_author: Sheldon Wei 
+site_url: https://domain/gim
+site_description: >-
+  An advanced Git commit message generation utility designed to automatically craft high-quality commit messages with precision and sophistication.
+docs_dir: "content/"
+# Project information
+repo_name: davelet/git-intelligence-message
+repo_url: https://github.com/davelet/git-intelligence-message
+edit_uri: "edit/main/docs/content/"
+copyright: Copyright &copy; 2025 - 2026 GIM
+
+# Theming
+theme:
+  name: material
+  font:
+    code: IBM Plex Mono
+  features:
+    - content.action.edit
+    - navigation.expand
+    - navigation.footer
+    - navigation.indexes
+    - navigation.instant
+    - navigation.instant.progress
+    - navigation.sections
+    - navigation.tabs
+    - navigation.top
+    - search.highlight
+    - search.suggest
+    - toc.integrate
+    - toc.follow
+  icon:
+    edit: material/pencil
+  palette:
+    # Palette toggle for automatic mode
+    - media: "(prefers-color-scheme)"
+      scheme: default
+      toggle:
+        icon: material/brightness-auto
+        name: Switch to light mode
+    # Light mode
+    - media: "(prefers-color-scheme: light)"
+      primary: indigo
+      accent: indigo
+      toggle:
+        icon: material/weather-sunny
+        name: Switch to dark mode
+    # Dark mode
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      primary: black
+      accent: indigo
+      toggle:
+        icon: material/weather-night
+        name: Switch to system preference
+extra_css:
+  - stylesheets/extra.css
+
+# Extensions
+markdown_extensions:
+  - admonition
+  - attr_list
+  - toc:
+      anchorlink: true
+  - pymdownx.inlinehilite
+  - pymdownx.keys:
+      # Override to make it case-sensitive
+      key_map:
+        {
+          "a": "a",
+          "b": "b",
+          "c": "c",
+          "d": "d",
+          "e": "e",
+          "f": "f",
+          "g": "g",
+          "h": "h",
+          "i": "i",
+          "j": "j",
+          "k": "k",
+          "l": "l",
+          "m": "m",
+          "n": "n",
+          "o": "o",
+          "p": "p",
+          "q": "q",
+          "r": "r",
+          "s": "s",
+          "t": "t",
+          "u": "u",
+          "v": "v",
+          "w": "w",
+          "x": "x",
+          "y": "y",
+          "z": "z",
+          "A": "A",
+          "B": "B",
+          "C": "C",
+          "D": "D",
+          "E": "E",
+          "F": "F",
+          "G": "G",
+          "H": "H",
+          "I": "I",
+          "J": "J",
+          "K": "K",
+          "L": "L",
+          "M": "M",
+          "N": "N",
+          "O": "O",
+          "P": "P",
+          "Q": "Q",
+          "R": "R",
+          "S": "S",
+          "T": "T",
+          "U": "U",
+          "V": "V",
+          "W": "W",
+          "X": "X",
+          "Y": "Y",
+          "Z": "Z",
+        }
+  - pymdownx.details
+  - pymdownx.highlight
+  - pymdownx.superfences
+  - mdx_truly_sane_lists # See https://github.com/mkdocs/mkdocs/issues/545#issuecomment-522196661
+  - pymdownx.tabbed:
+      alternate_style: true
+
+plugins:
+  - tags
+  - search
+  - mike:
+      canonical_version: stable
+  - git-revision-date-localized:
+      type: date
+  - privacy
+
+extra:
+  # Versioning
+  version:
+    provider: mike
+    default: stable
+
+# Navigation
+nav:
+  - "Home": index.md
