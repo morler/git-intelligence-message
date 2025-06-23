@@ -1,0 +1,46 @@
+# Workflow to deploy mkdocs documentation.
+
+name: docs
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+    paths:
+      - "docs/**"
+      - ".github/workflows/docs.yml"
+
+env:
+  # Assign commit authorship to official GitHub Actions bot when pushing to the `gh-pages` branch:
+  GIT_USER: "github-actions[bot]"
+  GIT_EMAIL: "41898282+github-actions[bot]@users.noreply.github.com"
+
+jobs:
+  build-documentation:
+    name: Build and deploy docs
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # v4.1.7
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-python@0b93645e9fea7318ecaed2b359559ac225c90a2b # v5.3.0
+        with:
+          python-version: 3.12
+
+      - name: Install Python dependencies
+        run: pip install -r docs/requirements.txt
+
+      - name: Configure git user and email
+        run: |
+          git config --global user.name ${GIT_USER}
+          git config --global user.email ${GIT_EMAIL}
+          echo Name: $(git config --get user.name)
+          echo Email: $(git config --get user.email)
+
+      - name: Build and deploy docs with mike
+        run: |
+          cd docs
+          mike deploy nightly --push
