@@ -41,6 +41,8 @@ jobs:
           echo Email: $(git config --get user.email)
 
       - name: Build and deploy docs with mike
+        env:
+          GH_TOKEN: ${{ secrets.GH_TOKEN }}
         run: |
           cd docs
           mike deploy nightly --push
