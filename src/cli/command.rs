@@ -1,5 +1,6 @@
 use clap::{Parser, Subcommand};
 
+/// Command-line interface structure for the gim tool, using clap for argument parsing.
 #[derive(Parser)]
 #[command(author, version, about, long_about = None)]
 pub struct GimCli {
@@ -23,6 +24,7 @@ pub struct GimCli {
     pub verbose: bool,
 }
 
+/// Enum representing all supported subcommands for the gim CLI.
 #[derive(Subcommand)]
 pub enum GimCommands {
     /// Check for updates and install the latest version

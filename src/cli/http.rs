@@ -56,6 +56,21 @@ struct ResponseError {
     r#type: Option<String>,
 }
 
+/// Sends a chat request to the specified AI API endpoint and returns the response.
+///
+/// # Arguments
+///
+/// * `url` - The API endpoint URL.
+/// * `model_name` - The name of the AI model to use.
+/// * `api_key` - The API key for authentication.
+/// * `system` - Optional system prompt.
+/// * `user` - The user input or prompt.
+/// * `log_info` - Whether to print verbose log information.
+///
+/// # Returns
+///
+/// * `Ok(String)` containing the AI response if successful.
+/// * `Err(Box<dyn Error>)` if the request fails or the response is invalid.
 pub async fn chat(
     url: String,
     model_name: String,
@@ -124,6 +139,16 @@ pub async fn chat(
     Err("unkown exception".into())
 }
 
+/// Returns the default API URL for the given model name, if recognized.
+///
+/// # Arguments
+///
+/// * `model_name` - The name of the AI model.
+///
+/// # Returns
+///
+/// * `Some(String)` containing the default URL if the model is recognized.
+/// * `None` if the model is not recognized.
 pub fn get_url_by_model(model_name: &str) -> Option<String> {
     if model_name.starts_with("moonshot") {
         return Some(crate::constants::MONOSHOT_URL.to_string());

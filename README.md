@@ -5,14 +5,17 @@
 
 An advanced Git commit message generation utility designed to automatically craft high-quality commit messages with precision and sophistication.
 
+Static site: https://git-intelligence-message.pages.dev/ 
+
 ## Features
 
 - 🤖 AI-powered commit message generation
 - ⚡ Lightning fast Rust implementation
 - 🔧 Easy configuration for various AI providers
-- 🌍 Multi-language support
-- 🔄 Automatic git staging (optional)
+- 🔄 Automatic update version
 - ✏️ Amend previous commits
+- 📝 Commit message template management
+- 📚 Customizable prompt templates
 
 ## Installation
 

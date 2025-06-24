@@ -10,6 +10,11 @@ fn file_dirs() -> Result<PathBuf> {
     directory::config_dir()
 }
 
+/// Returns the diff prompt string, reading from file if available, or using the default if not.
+///
+/// # Returns
+///
+/// * `String` containing the diff prompt.
 pub fn get_diff_prompt() -> String {
     let path = match file_dirs() {
         Ok(p) => p.join(DIFF_PROMPT_FILE),
@@ -32,6 +37,11 @@ pub fn get_diff_prompt() -> String {
     })
 }
 
+/// Returns the subject prompt string, reading from file if available, or using the default if not.
+///
+/// # Returns
+///
+/// * `String` containing the subject prompt.
 pub fn get_subject_prompt() -> String {
     let path = match file_dirs() {
         Ok(p) => p.join(SUBJECT_PROMPT_FILE),

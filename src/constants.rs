@@ -12,19 +12,22 @@ pub const QIANFAN_URL: &str = "https://qianfan.baidubce.com/v2/chat/completions"
 pub const DIFF_PROMPT: &str = r#"
     You are an expert developer specialist in creating git commits.
     Provide a super concise one sentence summary for each changed file, describing the main change made.
-    Each line must follow this format {FILE: CHANGES}
+    Each line must follow this format {FILE: CHANGES: (CHANGED_LINES_COUNT)}
 
     Please follow these rules strictly:
     - Output ONLY the lines of summaries, NO explanations, NO markdown, NO code blocks.
     - Each file change gets exactly one line.
     - Do not use general terms like "update" or "change", be specific.
     - Use present tense, active voice, and imperative mood (e.g., "Fix bug" instead of "Fixed bug").
+    - Skip project lock files, like 'Cargo.lock' or 'package-lock.json', 'pnpm-lock.yaml', 'yarn.lock'
+    - Skip binary files diff content
+    - Ignore files under .code folder or .idea folder, unless there aren't other files changed.
     - Avoid phrases like "The main goal is to..." or "Based on...", just state the change directly.
     - The output should be ready to copy-paste as a commit message with no further modification.
 
     Examples:
-    src/main.rs: Add login validation logic
-    README.md: Update installation instructions"#;
+    src/main.rs: Add login validation logic (87)
+    README.md: Update installation instructions (12)"#;
 pub const SUBJECT_PROMPT: &str = r#"
     You are an expert developer specialist in creating git commits messages.
     Your only goal is to retrieve a single commit message.
@@ -39,5 +42,6 @@ pub const SUBJECT_PROMPT: &str = r#"
         revert: When undoing a previous commit.
         refactor: When restructuring code without changing its external behavior, or is any of the other refactor types.
     - Do not add any issues numeration, explain your output nor introduce your answer.
+    - The number at the end of each file change is the count of changed lines; prioritize summarizing files with more line changes, except for newly added files which have medium priority
     - Output directly only one commit message in plain text with the next format: {type}: {commit_message}.
     - Be as concise as possible, keep the message under 50 characters or letters."#;

@@ -11,6 +11,10 @@ use crate::{constants::REPOSITORY, verbose::print_verbose};
 
 const VERSION: &str = env!("CARGO_PKG_VERSION");
 
+/// Checks whether an update reminder should be shown to the user and prints a message if a new version is available.
+///
+/// Loads the update reminder configuration, determines if a reminder should be shown, checks for a new version,
+/// and prints a notification if an update is available. Also updates the reminder count as needed.
 pub fn check_update_reminder() -> Result<(), Box<dyn std::error::Error>> {
     let mut reminder = UpdateReminder::load();
     print_verbose(&format!("Checking new version on config: {}", reminder));

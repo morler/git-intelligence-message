@@ -1,5 +1,8 @@
 use crate::{
-    cli::{http::get_url_by_model, prompt::{get_diff_prompt, get_subject_prompt, DIFF_PROMPT_FILE, SUBJECT_PROMPT_FILE}},
+    cli::{
+        http::get_url_by_model,
+        prompt::{get_diff_prompt, get_subject_prompt, DIFF_PROMPT_FILE, SUBJECT_PROMPT_FILE},
+    },
     verbose::print_verbose,
 };
 
@@ -10,6 +13,14 @@ use super::{
 use gim_config::directory;
 use std::process::Command;
 
+/// Runs the main CLI logic based on the provided arguments and configuration.
+///
+/// Handles subcommands for update, prompt, and AI configuration, as well as the default commit message generation flow.
+///
+/// # Arguments
+///
+/// * `cli` - Reference to the parsed CLI arguments.
+/// * `config` - Mutable TOML configuration value.
 pub async fn run_cli(cli: &GimCli, mut config: toml::Value) {
     match &cli.command {
         Some(GimCommands::Update { force }) => {
