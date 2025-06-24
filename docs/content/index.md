@@ -1,17 +1,18 @@
-# Welcome to MkDocs
+# Git Intelligence Message (GIM) 🚀
 
-For full documentation visit [mkdocs.org](https://www.mkdocs.org).
+[![Crates.io](https://img.shields.io/crates/v/git-intelligence-message)](https://crates.io/crates/git-intelligence-message)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-## Commands
+An advanced Git commit message generation utility designed to automatically craft high-quality commit messages with precision and sophistication.
 
-* `mkdocs new [dir-name]` - Create a new project.
-* `mkdocs serve` - Start the live-reloading docs server.
-* `mkdocs build` - Build the documentation site.
-* `mkdocs -h` - Print help message and exit.
+## Features
 
-## Project layout
+- 🤖 AI-powered commit message generation
+- ⚡ Lightning fast Rust implementation
+- 🔧 Easy configuration for various AI providers
+- 🔄 Automatic git staging (optional)
+- ✏️ Amend previous commits
 
-    mkdocs.yml    # The configuration file.
-    docs/
-        index.md  # The documentation homepage.
-        ...       # Other markdown pages, images and other files.
+![screenshot](image.png "screenshot")
+
+Ready for [Installation](installation)?
