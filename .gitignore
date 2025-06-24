@@ -1,2 +1,7 @@
 /target
 .vscode/
+/docs/.cache/
+/docs/site/
+/.DS_Store
+/.idea/
+/.vscode-test/

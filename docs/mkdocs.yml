@@ -138,6 +138,7 @@ plugins:
   - privacy
 
 extra:
+  favicon: "favicon.ico"
   # Versioning
   version:
     provider: mike
@@ -146,3 +147,9 @@ extra:
 # Navigation
 nav:
   - "Home": index.md
+  - "Installation": installation.md
+  - "AI Configuration": ai.md
+  - "Command Line Interface": cli.md
+  - "Prompt Management": prompt.md
+  - "Update": update.md
+  - "Contributing": contribute.md
