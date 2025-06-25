@@ -17,7 +17,7 @@ pub struct GimCli {
 
     /// Ammend the last commit
     #[arg(short = 'p', long, default_value_t = false)]
-    pub update: bool,
+    pub overwrite: bool,
 
     /// Show verbose output
     #[arg(short, long, default_value_t = false)]
@@ -32,6 +32,14 @@ pub enum GimCommands {
         /// Force update even if the current version is the latest
         #[arg(short, long, default_value_t = false)]
         force: bool,
+
+        /// Set the max_try param
+        #[arg(long)]
+        max: Option<usize>,
+
+        /// Set the try_interval_days param
+        #[arg(long)]
+        interval: Option<usize>,
     },
 
     /// Manage ai model prompt files. Show content when no options specified
@@ -67,4 +75,11 @@ pub enum GimCommands {
         #[arg(short, long)]
         language: Option<String>,
     },
+
+    /// Setup the git configuration
+    Config {
+        /// Git commit changed lines limit
+        #[arg(long)]
+        lines_limit: usize
+    }
 }

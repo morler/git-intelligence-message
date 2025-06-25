@@ -18,6 +18,9 @@ gim ai --url "your-api-url"
 
 # Set output language
 gim ai --language "your-language"
+
+# print current configuration
+gim ai
 ```
 
 > Important: The `--url` parameter only supports OpenAI-compatible API endpoints ,such as OpenAI official or third-party services compatible with OpenAI protocol.

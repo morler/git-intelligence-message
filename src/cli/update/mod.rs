@@ -8,6 +8,8 @@ pub mod reminder;
 use reminder::UpdateReminder;
 
 use crate::{constants::REPOSITORY, verbose::print_verbose};
+use gim_config::config::update_config_value;
+use toml::Value;
 
 const VERSION: &str = env!("CARGO_PKG_VERSION");
 
@@ -119,6 +121,44 @@ pub async fn check_and_install_update(force: bool) -> Result<(), Box<dyn std::er
         eprintln!("Warning: Failed to reset reminder: {}", e);
     }
 
+    Ok(())
+}
+
+/// Sets the maximum number of update reminder attempts.
+///
+/// # Arguments
+///
+/// * `max_try` - The maximum number of times to show update reminders before stopping.
+///
+/// # Returns
+///
+/// Returns `Ok(())` if the configuration was updated successfully, or an error if the update failed.
+pub fn set_max_try(max_try: u32) -> Result<(), Box<dyn std::error::Error>> {
+    update_config_value(
+        "update",
+        "max_try",
+        Value::Integer(max_try as i64),
+    )?;
+    print_verbose(&format!("Successfully set max try count to: {}", max_try));
+    Ok(())
+}
+
+/// Sets the interval (in days) between update reminder checks.
+///
+/// # Arguments
+///
+/// * `interval` - The number of days to wait between checking for updates.
+///
+/// # Returns
+///
+/// Returns `Ok(())` if the configuration was updated successfully, or an error if the update failed.
+pub fn set_try_interval(interval: u32) -> Result<(), Box<dyn std::error::Error>> {
+    update_config_value(
+        "update",
+        "try_interval_days",
+        Value::Integer(interval as i64),
+    )?;
+    print_verbose(&format!("Successfully set try interval to: {} days", interval));
     Ok(())
 }
 

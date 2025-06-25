@@ -150,6 +150,8 @@ nav:
   - "Installation": installation.md
   - "AI Configuration": ai.md
   - "Command Line Interface": cli.md
+  - "User Customization": user_config.md
   - "Prompt Management": prompt.md
   - "Update": update.md
   - "Contributing": contribute.md
+  - "Changelog": changelog.md

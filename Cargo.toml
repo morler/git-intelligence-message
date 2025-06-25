@@ -16,7 +16,7 @@ lto = true
 codegen-units = 1
 
 [dependencies]
-gim-config = "0.3.0"
+gim-config = "0.4.0"
 clap = { version = "4.4", features = ["derive"] }
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
@@ -30,6 +30,7 @@ semver = "1.0"
 log = "0.4"
 pretty_env_logger = "0.5"
 lazy_static = "1.4"
+indoc = "2.0.6"
 
 [[bin]]
 name = "gim"

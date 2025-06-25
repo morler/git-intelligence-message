@@ -1,8 +1,9 @@
 use crate::{
     cli::{
         http::get_url_by_model,
-        prompt::{get_diff_prompt, get_subject_prompt, DIFF_PROMPT_FILE, SUBJECT_PROMPT_FILE},
+        prompt::{get_diff_prompt, get_subject_prompt},
     },
+    constants::{DIFF_PROMPT_FILE, SUBJECT_PROMPT_FILE},
     verbose::print_verbose,
 };
 
@@ -11,6 +12,7 @@ use super::{
     http::chat,
 };
 use gim_config::directory;
+use indoc::{eprintdoc, printdoc};
 use std::process::Command;
 
 /// Runs the main CLI logic based on the provided arguments and configuration.
@@ -23,10 +25,44 @@ use std::process::Command;
 /// * `config` - Mutable TOML configuration value.
 pub async fn run_cli(cli: &GimCli, mut config: toml::Value) {
     match &cli.command {
-        Some(GimCommands::Update { force }) => {
-            if let Err(e) = crate::cli::update::check_and_install_update(*force).await {
-                eprintln!("Failed to update: {}", e);
-                std::process::exit(1);
+        Some(GimCommands::Update {
+            force,
+            max,
+            interval,
+        }) => {
+            if max.is_some() || interval.is_some() {
+                if *force {
+                    eprintln!("Warning: won't update when --max or --interval provided");
+                }
+                'max: {
+                    if let Some(max) = max {
+                        if *max <= 0 {
+                            eprintln!("Error: --max must be a positive integer");
+                            break 'max;
+                        }
+                        if let Err(e) = super::update::set_max_try((*max).try_into().unwrap()) {
+                            eprintln!("Failed to set max try: {}", e);
+                            break 'max;
+                        }
+                    }
+                }
+                'interval: {
+                    if let Some(interval) = interval {
+                        if *interval <= 0 {
+                            eprintln!("Error: --interval must be a positive integer");
+                            break 'interval;
+                        }
+                        if let Err(e) = super::update::set_try_interval((*interval).try_into().unwrap()) {
+                            eprintln!("Failed to set try interval: {}", e);
+                            break 'interval;
+                        }
+                    }
+                }
+            } else {
+                if let Err(e) = crate::cli::update::check_and_install_update(*force).await {
+                    eprintln!("Failed to update: {}", e);
+                    std::process::exit(1);
+                }
             }
             return;
         }
@@ -58,13 +94,18 @@ pub async fn run_cli(cli: &GimCli, mut config: toml::Value) {
                             eprintln!("Warning: you have not setup api url by 'gim ai -u <url>'");
                         }
                     }
-                    println!(
-                        r#"Model:      {}
-API Key:    {}
-URL:        {}
-Language:   {}
-You can use 'gim ai -m <model> -k <apikey> -u <url> -l <language>' respectively to update the configuration"#,
-                        &ai.1, &ai.2, &url, &ai.3
+                    printdoc!(
+                        r#"
+                        Model:      {}
+                        API Key:    {}
+                        URL:        {}
+                        Language:   {}
+                        You can use 'gim ai -m <model> -k <apikey> -u <url> -l <language>' respectively to update the configuration
+                        "#,
+                        &ai.1,
+                        &ai.2,
+                        &url,
+                        &ai.3
                     );
                 } else {
                     eprintln!("Error: ai section is not configured");
@@ -72,6 +113,13 @@ You can use 'gim ai -m <model> -k <apikey> -u <url> -l <language>' respectively 
                 return;
             }
             super::ai_configer::update_ai_config(&mut config, model, apikey, url, language);
+            return;
+        }
+        Some(GimCommands::Config { lines_limit }) => {
+            if let Err(e) = super::custom_param::set_lines_limit(*lines_limit) {
+                eprintln!("Error: {}", e);
+                std::process::exit(1);
+            }
             return;
         }
         None => {}
@@ -146,7 +194,7 @@ You can use 'gim ai -m <model> -k <apikey> -u <url> -l <language>' respectively 
             diff_content.push_str("\n");
         }
     }
-    if cli.update {
+    if cli.overwrite {
         diff_content.push_str(
             "As I want to amend commit message, I use `git show` and got the following output: \n",
         );
@@ -162,8 +210,21 @@ You can use 'gim ai -m <model> -k <apikey> -u <url> -l <language>' respectively 
         println!("As '-p' option is enabled, I will amend the last commit message");
     }
     if diff_content.is_empty() {
-        println!("No changes found. To update last commit message, please use '-p' option");
+        println!("No changes found. To override last commit message, please use '-p' option");
         return;
+    }
+
+    let diff_limit = crate::cli::custom_param::get_lines_limit();
+    if diff_content.lines().count() > diff_limit {
+        eprintdoc!(
+            r"
+            Your changed lines count ({}) exceeds the limit: {}. 
+            Please use 'git commit' to commit the changes or adjust the limit by 'gim config --change-limit <LIMIT>' and try again.
+            ",
+            diff_content.lines().count(),
+            diff_limit
+        );
+        std::process::exit(1);
     }
 
     let config_result = get_validated_ai_config(cli.auto_add, changes.len() > 0);
@@ -192,7 +253,7 @@ You can use 'gim ai -m <model> -k <apikey> -u <url> -l <language>' respectively 
         ai_generating_error(&format!("Error: {}", e), cli.auto_add && changes.len() > 0);
         return;
     }
-    let answer = res.unwrap();
+    let file_changes = res.unwrap();
 
     let mut commit_subject = cli.title.clone();
     if commit_subject.is_none() {
@@ -202,7 +263,7 @@ You can use 'gim ai -m <model> -k <apikey> -u <url> -l <language>' respectively 
             model_name,
             api_key,
             Some(system),
-            format!("The changes are: \n{}", answer),
+            format!("The changes are: \n{}", file_changes),
             cli.verbose,
         )
         .await;
@@ -219,26 +280,24 @@ You can use 'gim ai -m <model> -k <apikey> -u <url> -l <language>' respectively 
     let commit_subject = commit_subject.unwrap();
     print_verbose(&format!("AI chat content: {}", diff_content));
     println!();
-    println!(
+    printdoc!(
         r#"
->>>>>>>>>>>>>>>>>>>>>>>>>
-Commit subject: "{}""#,
-        commit_subject
-    );
-    println!(
-        r#"
-Commit message: "{}"
-<<<<<<<<<<<<<<<<<<<<<<<<<
-"#,
-        answer
+        >>>>>>>>>>>>>>>>>>>>>>>>>
+        Commit subject: "{}"
+
+        Commit message: "{}"
+        <<<<<<<<<<<<<<<<<<<<<<<<<
+        "#,
+        commit_subject,
+        file_changes
     );
 
     // Prepare commit message
     let mut commit_args = vec!["commit"];
-    if cli.update {
+    if cli.overwrite {
         commit_args.push("--amend");
     }
-    commit_args.extend(["-m", &commit_subject, "-m", &answer]);
+    commit_args.extend(["-m", &commit_subject, "-m", &file_changes]);
 
     // Execute git commit
     print_verbose("Run 'git commit -m <subject> -m <message>'");
@@ -326,11 +385,12 @@ fn handle_prompt_command(
                 // Linux and others
                 Command::new("xdg-open").arg(&config_dir).status()?;
             }
-            println!(
+            printdoc!(
                 r#"
-Please edit the prompt files using your favorite editor in the popped window: {}
-1: {}
-2: {}"#,
+                Please edit the prompt files using your favorite editor in the popped window: {}
+                1: {}
+                2: {}
+                "#,
                 config_dir.display(),
                 DIFF_PROMPT_FILE,
                 SUBJECT_PROMPT_FILE
@@ -338,14 +398,16 @@ Please edit the prompt files using your favorite editor in the popped window: {}
         }
     } else {
         // Show the content of both prompt files
-        println!(
+        printdoc!(
             r#"
-=== Diff Prompt ===
-{}
+            === Diff Prompt ===
+            {}
 
-=== Subject Prompt ===
-{}"#,
-            &diff_prompt, &subject_prompt
+            === Subject Prompt ===
+            {}
+            "#,
+            &diff_prompt,
+            &subject_prompt
         );
     }
 
@@ -434,7 +496,7 @@ mod tests {
         let cli = GimCli {
             command: None,
             auto_add: false,
-            update: true,
+            overwrite: true,
             title: None,
             verbose: true,
         };

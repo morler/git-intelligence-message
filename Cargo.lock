@@ -425,9 +425,9 @@ dependencies = [
 
 [[package]]
 name = "gim-config"
-version = "0.3.0"
+version = "0.4.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "d85d5601c763cf2e5ee46bf06b80c0eedf13bd93b21bf4ecd5aab43472206e08"
+checksum = "cadebd691b1d30e86ffa1ea6190849c45fcecb4ddddffe69081441cd27bfba47"
 dependencies = [
  "dirs 6.0.0",
  "toml",
@@ -447,6 +447,7 @@ dependencies = [
  "clap",
  "dirs 5.0.1",
  "gim-config",
+ "indoc",
  "lazy_static",
  "log",
  "pretty_env_logger",
@@ -729,6 +730,12 @@ dependencies = [
  "equivalent",
  "hashbrown",
 ]
+
+[[package]]
+name = "indoc"
+version = "2.0.6"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "f4c7245a08504955605670dbf141fceab975f15ca21570696aebe9d2e71576bd"
 
 [[package]]
 name = "ipnet"

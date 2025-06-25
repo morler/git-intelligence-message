@@ -1,5 +1,11 @@
 # Changelog
 
+## [1.4.0] - 2025-06-26
+
+- added mkdocs docs
+- added custom param `lines_limit`
+- added support for set 'update' block params
+
 ## [1.3.2]
 
 - add command to show 'ai' block
@@ -16,7 +22,6 @@
   - View both diff and subject prompt templates
   - Edit prompt files with `--edit` flag
   - Support for custom editors with `--editor` option
-  - Cross-platform file management (macOS, Windows, Linux)
   - Short aliases for prompt types (d/diff/diff_prompt, s/subject/subject_prompt)
 
 ### Changed
