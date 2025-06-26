@@ -2,6 +2,15 @@ use gim_config::config;
 use std::io::Result;
 use toml;
 
+/// Updates the AI configuration in the provided TOML value with the specified model, API key, URL, and language.
+///
+/// # Arguments
+///
+/// * `config` - Mutable reference to the TOML configuration value.
+/// * `model` - Optional model name to set.
+/// * `apikey` - Optional API key to set.
+/// * `url` - Optional API URL to set.
+/// * `language` - Optional language to set.
 pub fn update_ai_config(
     config: &mut toml::Value,
     model: &Option<String>,
@@ -42,6 +51,12 @@ pub fn update_ai_config(
     }
 }
 
+/// Retrieves the AI configuration section from the TOML configuration file.
+///
+/// # Returns
+///
+/// * `Ok(toml::Value)` containing the AI configuration if successful.
+/// * `Err(std::io::Error)` if the AI section is missing or invalid.
 pub fn get_ai_config() -> Result<toml::Value> {
     let toml = config::get_config_into_toml(false);
     if toml.is_err() {

@@ -13,6 +13,10 @@ An advanced Git commit message generation utility designed to automatically craf
 - 🔄 Automatic git staging (optional)
 - ✏️ Amend previous commits
 
+## Dog Food Policy
+
+I have been utilising this tool since it's a toddler. I am sharing it with the community to help others who may find it useful.
+
 ![screenshot](image.png "screenshot")
 
 Ready for [Installation](installation)?
