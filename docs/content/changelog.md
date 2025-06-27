@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.5.0] - 2025-06-27
+
+- Added `--reset` flag to `prompt` subcommand
+  - Reset both diff and subject prompts to default
+  - Remove prompt files if they exist
+- Ignore deleted files content to reduce AI chat token consumption
+
 ## [1.4.0] - 2025-06-26
 
 - Added mkdocs docs
@@ -10,14 +17,8 @@
 
 - add command to show 'ai' block
 
-## [1.3.1] - 2025-05-22
-
-### Changed
-- Docs rule
-
 ## [1.3.0] - 2025-05-22
 
-### Added
 - New `prompt` subcommand to manage AI prompt templates
   - View both diff and subject prompt templates
   - Edit prompt files with `--edit` flag

@@ -52,7 +52,9 @@ pub async fn run_cli(cli: &GimCli, mut config: toml::Value) {
                             eprintln!("Error: --interval must be a positive integer");
                             break 'interval;
                         }
-                        if let Err(e) = super::update::set_try_interval((*interval).try_into().unwrap()) {
+                        if let Err(e) =
+                            super::update::set_try_interval((*interval).try_into().unwrap())
+                        {
                             eprintln!("Failed to set try interval: {}", e);
                             break 'interval;
                         }
@@ -70,8 +72,20 @@ pub async fn run_cli(cli: &GimCli, mut config: toml::Value) {
             edit,
             prompt,
             editor,
+            reset,
         }) => {
-            if let Err(e) = handle_prompt_command(*edit, prompt.as_deref(), editor.as_deref()) {
+            if *reset {
+                if *edit || prompt.is_some() || editor.is_some() {
+                    println!("Warning: --edit, --prompt or --editor will be ignored when --reset provided");
+                }
+                // delete the 2 files
+                if let Err(e) = delete_prompt_files() {
+                    eprintln!("Error in reset prompt: {}", e);
+                    std::process::exit(1);
+                }
+            } else if let Err(e) =
+                handle_prompt_command(*edit, prompt.as_deref(), editor.as_deref())
+            {
                 eprintln!("Error: {}", e);
                 std::process::exit(1);
             }
@@ -182,16 +196,36 @@ pub async fn run_cli(cli: &GimCli, mut config: toml::Value) {
             print_verbose("Run 'git add .'");
         }
 
-        // Get staged changes
+        // Get staged changes with name-status to filter out deleted file contents
         let diff_output = Command::new("git")
-            .args(["diff", "--cached"])
+            .args(["diff", "--cached", "--name-status"])
             .output()
-            .expect("Failed to get git diff --cached");
-        print_verbose("Run 'git diff --cached'");
+            .expect("Failed to get git diff --cached --name-status");
+        print_verbose("Run 'git diff --cached --name-status'");
+
+        // Get full diff for non-deleted files
+        let full_diff_output = Command::new("git")
+            .args(["diff", "--cached", "--diff-filter=AM"])
+            .output()
+            .expect("Failed to get git diff --cached --diff-filter=AM");
+        print_verbose("Run 'git diff --cached --diff-filter=AM'");
+
         if !diff_output.stdout.is_empty() {
             diff_content.push_str("When I use `git diff`, I got the following output: \n");
-            diff_content.push_str(&String::from_utf8_lossy(&diff_output.stdout));
+
+            // Add file status information (including deleted files)
+            let status_info = String::from_utf8_lossy(&diff_output.stdout);
+            diff_content.push_str(&status_info);
             diff_content.push_str("\n");
+
+            // Add full diff content only for added/modified files
+            if !full_diff_output.stdout.is_empty() {
+                diff_content.push_str(
+                    "\nDetailed changes for added/modified files (excluding deleted files):\n",
+                );
+                diff_content.push_str(&String::from_utf8_lossy(&full_diff_output.stdout));
+                diff_content.push_str("\n");
+            }
         }
     }
     if cli.overwrite {
@@ -199,14 +233,31 @@ pub async fn run_cli(cli: &GimCli, mut config: toml::Value) {
             "As I want to amend commit message, I use `git show` and got the following output: \n",
         );
 
-        // Get last commit changes
-        let show_output = Command::new("git")
-            .args(["show", "--pretty=format:", "HEAD"])
+        // Get last commit changes with name-status to filter out deleted file contents
+        let show_status_output = Command::new("git")
+            .args(["show", "--pretty=format:", "--name-status", "HEAD"])
             .output()
-            .expect("Failed to get git show");
-        print_verbose("Run 'git show --pretty=format: HEAD'");
-        diff_content.push_str(&String::from_utf8_lossy(&show_output.stdout));
+            .expect("Failed to get git show --name-status");
+        print_verbose("Run 'git show --pretty=format: --name-status HEAD'");
+
+        // Get full diff for non-deleted files in last commit
+        let show_diff_output = Command::new("git")
+            .args(["show", "--pretty=format:", "--diff-filter=AM", "HEAD"])
+            .output()
+            .expect("Failed to get git show --diff-filter=AM");
+        print_verbose("Run 'git show --pretty=format: --diff-filter=AM HEAD'");
+
+        // Add file status information (including deleted files)
+        let status_info = String::from_utf8_lossy(&show_status_output.stdout);
+        diff_content.push_str(&status_info);
         diff_content.push_str("\n");
+
+        // Add full diff content only for added/modified files
+        if !show_diff_output.stdout.is_empty() {
+            diff_content.push_str("\nDetailed changes for added/modified files in last commit (excluding deleted files):\n");
+            diff_content.push_str(&String::from_utf8_lossy(&show_diff_output.stdout));
+            diff_content.push_str("\n");
+        }
         println!("As '-p' option is enabled, I will amend the last commit message");
     }
     if diff_content.is_empty() {
@@ -314,6 +365,19 @@ pub async fn run_cli(cli: &GimCli, mut config: toml::Value) {
             String::from_utf8_lossy(&commit_output.stderr)
         );
     }
+}
+
+fn delete_prompt_files() -> Result<(), Box<dyn std::error::Error>> {
+    let config_dir = directory::config_dir()?;
+    let diff_prompt_path = config_dir.join(DIFF_PROMPT_FILE);
+    let subject_prompt_path = config_dir.join(SUBJECT_PROMPT_FILE);
+    if diff_prompt_path.exists() {
+        std::fs::remove_file(&diff_prompt_path)?;
+    }
+    if subject_prompt_path.exists() {
+        std::fs::remove_file(&subject_prompt_path)?;
+    }
+    Ok(())
 }
 
 fn handle_prompt_command(
