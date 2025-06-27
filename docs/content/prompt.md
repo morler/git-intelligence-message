@@ -15,6 +15,10 @@ gim prompt --edit --prompt diff
 # Edit a specific prompt file with custom editor, 
 # like 'code', 'vim' or any other text editor available on your Mac
 gim prompt --edit --prompt subject --editor code
+
+# Reset both diff and subject prompts to default
+# By removing prompt files if they exist
+gim prompt --reset
 ```
 
 The `-prompt` option can take these params:

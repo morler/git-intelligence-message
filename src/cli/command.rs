@@ -55,6 +55,10 @@ pub enum GimCommands {
         /// Optional: Specify the editor to use (e.g., vim, code, nano)
         #[arg(short = 'o', long)]
         editor: Option<String>,
+
+        /// Optional: Reset the prompt to default
+        #[arg(long, default_value_t = false)]
+        reset: bool,
     },
 
     /// Setup the ai-api configuration
