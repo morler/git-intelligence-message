@@ -14,6 +14,10 @@ categories = ["command-line-utilities"]
 opt-level = 3
 lto = true
 codegen-units = 1
+panic = "abort"
+
+[target.'cfg(windows)'.rustflags]
+rustflags = ["-C", "target-feature=+crt-static"]
 
 [dependencies]
 gim-config = "0.4.0"
