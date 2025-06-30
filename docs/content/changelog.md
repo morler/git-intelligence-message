@@ -1,4 +1,7 @@
-# Changelog
+# Changeloga
+## [1.6.1] - 2025-06-30
+
+- Added binary to scoop bucket
 
 ## [1.5.0] - 2025-06-27
 
