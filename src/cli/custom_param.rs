@@ -40,7 +40,7 @@ pub fn set_lines_limit(lines_limit: usize) -> Result<()> {
         ));
         if e.kind() == ErrorKind::NotFound {
             if e.to_string() == format!("Section '{}' not found", CUSTOM_SECTION_NAME) {
-                let mut config = config::get_config_into_toml(false).unwrap();
+                let mut config = config::get_config().unwrap();
                 let map = config.as_table_mut().unwrap();
 
                 let mut update_table = Map::new();
@@ -51,6 +51,6 @@ pub fn set_lines_limit(lines_limit: usize) -> Result<()> {
         }
         return Err(e);
     }
-    print_verbose(&format!("set custom config '{}' done, value: {:?}", NAME, lines_limit));
+    println!("set custom config '{}' done, value: {:?}", NAME, lines_limit);
     Ok(())
 }

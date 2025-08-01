@@ -1,7 +1,7 @@
 use std::{fmt::Display, str::FromStr};
 
 use chrono::{Local, NaiveDate};
-use gim_config::config::{get_config_into_toml, update_config_value};
+use gim_config::config::{get_config, update_config_value};
 use serde::{Deserialize, Serialize};
 use toml::Value;
 
@@ -42,7 +42,7 @@ impl Default for UpdateReminder {
 
 impl UpdateReminder {
     pub fn load() -> Self {
-        let config = get_config_into_toml(false).unwrap();
+        let config = get_config().unwrap();
         let mut remider = UpdateReminder::default();
         if let Some(update) = config.get(UPDATE_SECTION) {
             if let Some(tried) = update.get("tried") {

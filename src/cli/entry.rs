@@ -11,6 +11,7 @@ use super::{
     command::{GimCli, GimCommands},
     http::chat,
 };
+use gim_config::config;
 use gim_config::directory;
 use indoc::{eprintdoc, printdoc};
 use std::process::Command;
@@ -76,7 +77,9 @@ pub async fn run_cli(cli: &GimCli, mut config: toml::Value) {
         }) => {
             if *reset {
                 if *edit || prompt.is_some() || editor.is_some() {
-                    println!("Warning: --edit, --prompt or --editor will be ignored when --reset provided");
+                    println!(
+                        "Warning: --edit, --prompt or --editor will be ignored when --reset provided"
+                    );
                 }
                 // delete the 2 files
                 if let Err(e) = delete_prompt_files() {
@@ -129,10 +132,24 @@ pub async fn run_cli(cli: &GimCli, mut config: toml::Value) {
             super::ai_configer::update_ai_config(&mut config, model, apikey, url, language);
             return;
         }
-        Some(GimCommands::Config { lines_limit }) => {
-            if let Err(e) = super::custom_param::set_lines_limit(*lines_limit) {
-                eprintln!("Error: {}", e);
-                std::process::exit(1);
+        Some(GimCommands::Config {
+            lines_limit,
+            show_location,
+        }) => {
+            if *show_location {
+                if let Err(e) = config::get_config_and_print() {
+                    eprintln!("Error: {}", e);
+                    std::process::exit(1);
+                }
+                if let Err(e) = open_config_directory() {
+                    eprintln!("Error: {}", e);
+                }
+            }
+            if let Some(lines_limit) = lines_limit {
+                if let Err(e) = super::custom_param::set_lines_limit(*lines_limit) {
+                    eprintln!("Error: {}", e);
+                    std::process::exit(1);
+                }
             }
             return;
         }
@@ -358,7 +375,9 @@ pub async fn run_cli(cli: &GimCli, mut config: toml::Value) {
         .expect("Failed to execute git commit");
 
     if commit_output.status.success() {
-        println!("✅ Successfully committed changes! If you were discontent with the commit message and want to polish or revise it, run 'gim -p' or 'git commit --amend'");
+        println!(
+            "✅ Successfully committed changes! If you were discontent with the commit message and want to polish or revise it, run 'gim -p' or 'git commit --amend'"
+        );
     } else {
         eprintln!(
             "Error: Failed to commit changes - {}",
@@ -437,18 +456,7 @@ fn handle_prompt_command(
                 }
             }
         } else {
-            // Open the directory with default file manager
-            if cfg!(target_os = "macos") {
-                Command::new("open")
-                    // .arg("-R") // Reveal in Finder
-                    .arg(&config_dir)
-                    .status()?;
-            } else if cfg!(target_os = "windows") {
-                Command::new("explorer").arg(&config_dir).status()?;
-            } else {
-                // Linux and others
-                Command::new("xdg-open").arg(&config_dir).status()?;
-            }
+            open_config_directory()?;
             printdoc!(
                 r#"
                 Please edit the prompt files using your favorite editor in the popped window: {}
@@ -475,6 +483,23 @@ fn handle_prompt_command(
         );
     }
 
+    Ok(())
+}
+
+fn open_config_directory() -> Result<(), Box<dyn std::error::Error>> {
+    let config_dir = directory::config_dir()?;
+    // Open the directory with default file manager
+    if cfg!(target_os = "macos") {
+        Command::new("open")
+            // .arg("-R") // Reveal in Finder
+            .arg(&config_dir)
+            .status()?;
+    } else if cfg!(target_os = "windows") {
+        Command::new("explorer").arg(&config_dir).status()?;
+    } else {
+        // Linux and others
+        Command::new("xdg-open").arg(&config_dir).status()?;
+    }
     Ok(())
 }
 
