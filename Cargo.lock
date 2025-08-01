@@ -425,9 +425,9 @@ dependencies = [
 
 [[package]]
 name = "gim-config"
-version = "0.5.0"
+version = "1.0.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "ce7334c278af8af9bd7cc2d0c53a8f48ac1a278f38de53788995a13e6e55f824"
+checksum = "74b6db802768838ec40c0da50cdeb3c5a6c2782b187ad28692fa4b76d3fb5561"
 dependencies = [
  "dirs 6.0.0",
  "toml",
@@ -441,7 +441,7 @@ checksum = "07e28edb80900c19c28f1072f2e8aeca7fa06b23cd4169cefe1af5aa3260783f"
 
 [[package]]
 name = "git-intelligence-message"
-version = "1.6.0"
+version = "1.7.0"
 dependencies = [
  "chrono",
  "clap",

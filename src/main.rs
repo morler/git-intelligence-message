@@ -7,7 +7,6 @@ mod constants;
 
 #[tokio::main]
 async fn main() {
-    let config = get_config().expect("Failed to access config file");
     let cli = <GimCli as clap::Parser>::parse();
     
     // Set global verbose flag
@@ -21,5 +20,6 @@ async fn main() {
     }
 
     // run the cli
+    let config = get_config().expect("Failed to access config file");
     run_cli(&cli, config).await;
 }

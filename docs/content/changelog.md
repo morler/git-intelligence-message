@@ -1,4 +1,9 @@
-# Changeloga
+# Changelog
+
+## [1.7.0] - 2025-08-01
+
+- Added `--show-location` flag to command `config` to show config file location
+
 ## [1.6.1] - 2025-06-30
 
 - Added binary to scoop bucket

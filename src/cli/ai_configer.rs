@@ -58,7 +58,7 @@ pub fn update_ai_config(
 /// * `Ok(toml::Value)` containing the AI configuration if successful.
 /// * `Err(std::io::Error)` if the AI section is missing or invalid.
 pub fn get_ai_config() -> Result<toml::Value> {
-    let toml = config::get_config_into_toml(false);
+    let toml = config::get_config();
     if toml.is_err() {
         toml
     } else if let Ok(toml) = toml {

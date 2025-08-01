@@ -84,6 +84,10 @@ pub enum GimCommands {
     Config {
         /// Git commit changed lines limit
         #[arg(long)]
-        lines_limit: usize
+        lines_limit: Option<usize>,
+
+        /// Print config file's location
+        #[arg(long, default_value_t = false)]
+        show_location: bool
     }
 }
