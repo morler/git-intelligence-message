@@ -434,15 +434,21 @@ fn handle_prompt_command(
             } else {
                 // Open the directory with default file manager
                 if cfg!(target_os = "macos") {
-                    Command::new("open")
+                    if let Err(e) = Command::new("open")
                         .arg("-R") // Reveal in Finder
                         .arg(&file_path)
-                        .status()?;
+                        .status()
+                    {
+                        eprintln!("Failed to open file in Finder: {}", e);
+                    }
                 } else if cfg!(target_os = "windows") {
-                    Command::new("explorer")
+                    if let Err(e) = Command::new("explorer")
                         .arg("/select,")
                         .arg(&file_path)
-                        .status()?;
+                        .status()
+                    {
+                        eprintln!("Failed to open file in Explorer: {}", e);
+                    }
                 } else {
                     // Linux and others
                     if Command::new("xdg-open")
@@ -450,10 +456,7 @@ fn handle_prompt_command(
                         .status()
                         .is_err()
                     {
-                        return Err(
-                            "Failed to open file manager. Please specify an editor with --editor"
-                                .into(),
-                        );
+                        eprintln!("Failed to open file manager. Please specify an editor with --editor");
                     }
                 }
             }
@@ -492,15 +495,27 @@ fn open_config_directory() -> Result<(), Box<dyn std::error::Error>> {
     let config_dir = directory::config_dir()?;
     // Open the directory with default file manager
     if cfg!(target_os = "macos") {
-        Command::new("open")
-            // .arg("-R") // Reveal in Finder
+        if let Err(e) = Command::new("open")
             .arg(&config_dir)
-            .status()?;
+            .status()
+        {
+            eprintln!("Failed to open config directory in Finder: {}", e);
+        }
     } else if cfg!(target_os = "windows") {
-        Command::new("explorer").arg(&config_dir).status()?;
+        if let Err(e) = Command::new("explorer")
+            .arg(&config_dir)
+            .status()
+        {
+            eprintln!("Failed to open config directory in Explorer: {}", e);
+        }
     } else {
         // Linux and others
-        Command::new("xdg-open").arg(&config_dir).status()?;
+        if let Err(e) = Command::new("xdg-open")
+            .arg(&config_dir)
+            .status()
+        {
+            eprintln!("Failed to open config directory: {}", e);
+        }
     }
     Ok(())
 }

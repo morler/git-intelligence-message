@@ -6,3 +6,6 @@ pub mod http;
 pub mod prompt;
 pub mod update;
 pub mod verbose;
+
+#[cfg(target_os = "windows")]
+pub mod windows_test;

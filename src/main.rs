@@ -5,6 +5,15 @@ use std::env;
 mod cli;
 mod constants;
 
+/// Main entry point for the GIM application.
+/// 
+/// This application is designed to work across multiple platforms:
+/// - Windows (7 and later)
+/// - macOS (10.12 and later)
+/// - Linux (most distributions)
+/// 
+/// The application uses platform-specific code for certain operations like
+/// opening file managers, but the core functionality is cross-platform.
 #[tokio::main]
 async fn main() {
     let cli = <GimCli as clap::Parser>::parse();
