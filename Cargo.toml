@@ -16,9 +16,6 @@ lto = true
 codegen-units = 1
 panic = "abort"
 
-[target.'cfg(windows)'.rustflags]
-rustflags = ["-C", "target-feature=+crt-static"]
-
 [dependencies]
 gim-config = "1.0.0"
 # gim-config = { git = "https://github.com/davelet/gim-config", branch = "develop" }
